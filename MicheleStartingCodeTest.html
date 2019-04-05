@@ -31,70 +31,65 @@
 		//posizione del mouse in game
 		var positionMouse;
 
-		// FUNZIONE EFFETTIVA DI MOVIMENTO CAMERA		(in rotazione deve stare dietro a pivot che ruota con lei)
-		function cameraMove(direction) {
-			var cameraSpeed = 2;
-			switch (direction) {
-				case "up":
-					camera.position.z -= cameraSpeed;
-					// controls.target.z -= cameraSpeed;
-					break;
-				case "dw":
-					camera.position.z += cameraSpeed;
-					// controls.target.z += cameraSpeed;
-					break;
-				case "sx":
-					camera.position.x -= cameraSpeed;
-					// controls.target.x -= cameraSpeed;
-					break;
-				case "dx":
-					camera.position.x += cameraSpeed;
-					// controls.target.x += cameraSpeed;
-					break;
+		//camera Pivot
+		var cameraPivot;
 
-				default:
-					break;
-			}
-			// controls.target = camera.position;
-			console.log(camera.position);
-		}
+		//velocità di movimento della telecamera in X e Y
+		var cameraSpeed = 0.1;
+		var cameraSpeedX, cameraSpeedZ;
 
+		//controllo se sto premendo il mouse
+		var enteredmouse;
 
-		//funzione da ricontrollare, non corretta
-		// function cameraRotate(evt) {
-		// 	var rotationSpeed = 0.01;
-		// 	var posizioneMouse = new THREE.Vector3(0, 0, 0);
-		// 	posizioneMouse.x = evt.clientX;
-		// 	posizioneMouse.y = evt.clientY;
+		// FUNZIONE EFFETTIVA DI MOVIMENTO CAMERA		
+		// (muovo il PIVOT perchè in questo modo muovo anche la camera che è oggetto interno al pivot)
+		// function cameraMove(direction) {
+		// 	var cameraSpeed = 2;
+		// 	switch (direction) {
+		// 		case "up":
+		// 			cameraPivot.translateZ(-cameraSpeed);
+		// 			break;
+		// 		case "dw":
+		// 			cameraPivot.translateZ(cameraSpeed);
+		// 			break;
+		// 		case "sx":
+		// 			cameraPivot.translateX(-cameraSpeed);
+		// 			break;
+		// 		case "dx":
+		// 			cameraPivot.translateX(cameraSpeed);
+		// 			break;
 
-		// 		console.log("lol");
-		// 		var distX = posizioneMouse.x - positionMouse.x;
-				
-		// 		// console.log(positionMouse);
-		// 		// console.log(posizioneMouse);
-		// 		var distY = posizioneMouse.y - positionMouse.y;
-		// 		console.log(distX);
-		// 		console.log(distY);
-
-
-		// 		if (distX != 0)
-		// 		camera.rotateY(rotationSpeed * distX / Math.abs(distX));
-		// 		// camera.rotation.y += rotationSpeed * distX / Math.abs(distX);
-
-		// 		if (distY != 0)
-		// 		camera.rotateX(rotationSpeed * distY / Math.abs(distY));
-		// 		// camera.rotation.x += rotationSpeed * (distY / Math.abs(distY));
-		// 		// }
-
-		// 	positionMouse = posizioneMouse;
-		// 	// console.log(posizioneMouse.x/Math.abs(posizioneMouse.x));
-
-
-		// 	// console.log(camera.rotation);
-		// 	//  console.log(rotationSpeed * posizioneMouse.x / Math.abs(posizioneMouse.x));
-
-		// 	// console.log(posizioneMouse);
+		// 		default:
+		// 			break;
+		// 	}
+		// 	// controls.target = camera.position;
+		// 	console.log(camera.position);
 		// }
+
+
+		//FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
+		// (così da permettere lo spostamento lungo x e z ruotati)
+		//e di ruotare la camera lungo l'asse X così da non andare in alto e in basso 
+		// (se ruotassi il pivot, allo spostamento del pivot potrei muovermi lungo la sua asse z
+		//  che sarebbe ruotata e andrei a spostarmi lungo un asse con componente Y globale
+		//  mentre ho bisogno che la camera non si muova lungo l'asse Y globale)
+		function cameraRotate(evt) {
+			var rotationSpeed = 0.06;
+			var posizioneMouse = new THREE.Vector3(0, 0, 0);
+			posizioneMouse.x = evt.screenX;
+			posizioneMouse.y = evt.screenY;
+
+			console.log("lol");
+			var distX = posizioneMouse.x - positionMouse.x;
+			var distY = posizioneMouse.y - positionMouse.y;
+			if (enteredmouse) {
+				if (distX != 0)
+					cameraPivot.rotateY(-rotationSpeed * distX / Math.abs(distX));
+				if (distY != 0)
+					camera.rotateX(-rotationSpeed * distY / Math.abs(distY));
+			}
+			positionMouse = posizioneMouse;
+		}
 
 
 		// FUNZIONE EVENTO PER MOVIMENTO DELLA CAMERA
@@ -107,19 +102,52 @@
 			switch (evt.keyCode) {
 				case 37: case 65:				//37 = sx   65 = a
 					console.log("you pressed:  " + evt.key);
-					cameraMove("sx");
+					cameraSpeedX = -cameraSpeed;
+					// cameraMove("sx");
 					break;
 				case 38: case 87:				//38 = up   87 = w
 					console.log("you pressed:  " + evt.key);
-					cameraMove("up");
+					cameraSpeedZ = -cameraSpeed;
+					// cameraMove("up");
 					break;
 				case 39: case 68:				//38 = dx   68 = d
 					console.log("you pressed:  " + evt.key);
-					cameraMove("dx");
+					cameraSpeedX = cameraSpeed;
+					// cameraMove("dx");
 					break;
 				case 40: case 83:				//40 = dw   83 = s
 					console.log("you pressed:  " + evt.key);
-					cameraMove("dw");
+					cameraSpeedZ = cameraSpeed;
+					// cameraMove("dw");
+					break;
+
+				default:
+					break;
+			}
+		}
+
+		function releasedDirection(evt) {
+			// console.log("pressedSomething");
+			switch (evt.keyCode) {
+				case 37: case 65:				//37 = sx   65 = a
+					console.log("you released:  " + evt.key);
+					cameraSpeedX = 0;
+					// cameraMove("sx");
+					break;
+				case 38: case 87:				//38 = up   87 = w
+					console.log("you released:  " + evt.key);
+					cameraSpeedZ = 0;
+					// cameraMove("up");
+					break;
+				case 39: case 68:				//38 = dx   68 = d
+					console.log("you released:  " + evt.key);
+					cameraSpeedX = 0;
+					// cameraMove("dx");
+					break;
+				case 40: case 83:				//40 = dw   83 = s
+					console.log("you released:  " + evt.key);
+					cameraSpeedZ = 0;
+					// cameraMove("dw");
 					break;
 
 				default:
@@ -142,14 +170,27 @@
 			renderer.shadowMap.enabled = true;
 			document.body.appendChild(renderer.domElement);
 
-			camera.position.set(0, 2, 2);
-
+			//posizione del mouse iniziale la pongo a (0,0,0)
 			positionMouse = new THREE.Vector3(0, 0, 0);
 
-			console.log(positionMouse);
+			//assegno alla variabile cameraPivot un object3D in modo da gestirlo come oggetto padre della camera
+			cameraPivot = new THREE.Object3D();
+			cameraPivot.position.set(0, 2, 2);
+			cameraPivot.add(camera);
+			scene.add(cameraPivot);
+
+			//velocità della camera è 0 quando la camera è ferma, mentre è cameraSpeed se la camera muove, in questo momento è 0 perchè all'inizio è ferma
+			cameraSpeedX = 0;
+			cameraSpeedZ = 0;
+			//di default il mouse non è premuto
+			enteredmouse = false;
+
 			//aggiungo un event listener alla finestra
 			document.addEventListener("keydown", pressedDirection, true);
-			// window.addEventListener("mousemove", cameraRotate, true);
+			document.addEventListener("keyup", releasedDirection, true);
+			window.addEventListener("mousedown", function changeCondition() {enteredmouse = true}, true);
+			window.addEventListener("mouseup",  function changeCondition() {enteredmouse = false}, true);
+			window.addEventListener("mousemove", cameraRotate, true);
 
 
 
@@ -214,6 +255,11 @@
 			// controls.update();
 			stats.update();
 
+
+			if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
+				cameraPivot.translateX(cameraSpeedX);
+				cameraPivot.translateZ(cameraSpeedZ);
+			}
 
 			Render();
 		}
