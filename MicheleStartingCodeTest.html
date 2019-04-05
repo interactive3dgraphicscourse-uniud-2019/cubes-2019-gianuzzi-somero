@@ -1,0 +1,232 @@
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Starting Code for 1st Project 2017 - with lights and textures</title>
+	<style>
+		body {
+			font-family: Monospace;
+			background-color: #f0f0f0;
+			margin: 0px;
+			overflow: hidden;
+		}
+
+		canvas {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+	<script src="lib/three.min.js"></script>
+	<script src="lib/stats.min.js"></script>
+	<script src="lib/Coordinates.js"></script>
+	<script src="lib/OrbitControls.js"></script>
+</head>
+
+<body>
+
+	<script>
+
+		var scene, camera, renderer, controls, stats;
+
+		//posizione del mouse in game
+		var positionMouse;
+
+		// FUNZIONE EFFETTIVA DI MOVIMENTO CAMERA		(in rotazione deve stare dietro a pivot che ruota con lei)
+		function cameraMove(direction) {
+			var cameraSpeed = 2;
+			switch (direction) {
+				case "up":
+					camera.position.z -= cameraSpeed;
+					// controls.target.z -= cameraSpeed;
+					break;
+				case "dw":
+					camera.position.z += cameraSpeed;
+					// controls.target.z += cameraSpeed;
+					break;
+				case "sx":
+					camera.position.x -= cameraSpeed;
+					// controls.target.x -= cameraSpeed;
+					break;
+				case "dx":
+					camera.position.x += cameraSpeed;
+					// controls.target.x += cameraSpeed;
+					break;
+
+				default:
+					break;
+			}
+			// controls.target = camera.position;
+			console.log(camera.position);
+		}
+
+
+		//funzione da ricontrollare, non corretta
+		// function cameraRotate(evt) {
+		// 	var rotationSpeed = 0.01;
+		// 	var posizioneMouse = new THREE.Vector3(0, 0, 0);
+		// 	posizioneMouse.x = evt.clientX;
+		// 	posizioneMouse.y = evt.clientY;
+
+		// 		console.log("lol");
+		// 		var distX = posizioneMouse.x - positionMouse.x;
+				
+		// 		// console.log(positionMouse);
+		// 		// console.log(posizioneMouse);
+		// 		var distY = posizioneMouse.y - positionMouse.y;
+		// 		console.log(distX);
+		// 		console.log(distY);
+
+
+		// 		if (distX != 0)
+		// 		camera.rotateY(rotationSpeed * distX / Math.abs(distX));
+		// 		// camera.rotation.y += rotationSpeed * distX / Math.abs(distX);
+
+		// 		if (distY != 0)
+		// 		camera.rotateX(rotationSpeed * distY / Math.abs(distY));
+		// 		// camera.rotation.x += rotationSpeed * (distY / Math.abs(distY));
+		// 		// }
+
+		// 	positionMouse = posizioneMouse;
+		// 	// console.log(posizioneMouse.x/Math.abs(posizioneMouse.x));
+
+
+		// 	// console.log(camera.rotation);
+		// 	//  console.log(rotationSpeed * posizioneMouse.x / Math.abs(posizioneMouse.x));
+
+		// 	// console.log(posizioneMouse);
+		// }
+
+
+		// FUNZIONE EVENTO PER MOVIMENTO DELLA CAMERA
+		// funzione moviemnto gestita con WASD o FRECCE DIREZIONALI,
+		// per usufruire di questo tipo di movimento disattivo i movimenti che consente di fare l'OrbitControl
+		// in più controllo che si possa gestire la rotazione della camera rispetto al centro della camera stessa con il mouse grazie alla OrbitControls
+
+		function pressedDirection(evt) {
+			// console.log("pressedSomething");
+			switch (evt.keyCode) {
+				case 37: case 65:				//37 = sx   65 = a
+					console.log("you pressed:  " + evt.key);
+					cameraMove("sx");
+					break;
+				case 38: case 87:				//38 = up   87 = w
+					console.log("you pressed:  " + evt.key);
+					cameraMove("up");
+					break;
+				case 39: case 68:				//38 = dx   68 = d
+					console.log("you pressed:  " + evt.key);
+					cameraMove("dx");
+					break;
+				case 40: case 83:				//40 = dw   83 = s
+					console.log("you pressed:  " + evt.key);
+					cameraMove("dw");
+					break;
+
+				default:
+					break;
+			}
+		}
+
+
+
+		function Start() {
+			scene = new THREE.Scene();
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+			renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setClearColor(0xf0f0f0);
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.gammaInput = true;
+			renderer.gammaOutput = true;
+			renderer.shadowMap.enabled = true;
+			document.body.appendChild(renderer.domElement);
+
+			camera.position.set(0, 2, 2);
+
+			positionMouse = new THREE.Vector3(0, 0, 0);
+
+			console.log(positionMouse);
+			//aggiungo un event listener alla finestra
+			document.addEventListener("keydown", pressedDirection, true);
+			// window.addEventListener("mousemove", cameraRotate, true);
+
+
+
+			var geometry = new THREE.BoxGeometry(1, 1, 1);
+			var texture = THREE.ImageUtils.loadTexture('textures/11635.jpg');
+			var material = new THREE.MeshPhongMaterial({ map: texture });
+			var cube = new THREE.Mesh(geometry, material);
+			cube.castShadow = true;
+			cube.receiveShadow = true;
+
+			scene.add(cube);
+
+			hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+			hemiLight.color.setHSL(0.6, 1, 0.6);
+			hemiLight.groundColor.setHSL(0.095, 1, 0.75);
+			hemiLight.position.set(0, 500, 0);
+			scene.add(hemiLight);
+
+			dirLight = new THREE.DirectionalLight(0xffffff, 1);
+			dirLight.color.setHSL(0.1, 1, 0.95);
+			dirLight.position.set(-1, 1.75, 1);
+			dirLight.position.multiplyScalar(50);
+			scene.add(dirLight);
+			dirLight.castShadow = true;
+			dirLight.shadow.mapSize.width = 1024;
+			dirLight.shadow.mapSize.height = 1024;
+
+
+			// GROUND
+			var groundGeo = new THREE.PlaneBufferGeometry(10000, 10000);
+			var groundMat = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x050505 });
+			groundMat.color.setHSL(0.095, 1, 0.75);
+			var ground = new THREE.Mesh(groundGeo, groundMat);
+			ground.position.y = -0.5;
+			ground.rotation.x = -Math.PI / 2;
+			scene.add(ground);
+			ground.receiveShadow = true;
+
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			document.body.appendChild(stats.domElement);
+
+			// uncomment if you need to draw coordinate axes when building the scene
+			// Coordinates.drawAllAxes();
+
+			// controls = new THREE.OrbitControls(camera);
+			//disattivo zoom della telecamera e movimento con le frecce direzionali per gestire il movimento di camera con la funzione movimento
+
+			// controls.enableZoom = false;
+			// controls.target = camera.position;
+			// controls.enableDumping = true;
+			// controls.enableKeys = false;
+			// controls.addEventListener('change', Render);
+
+
+		}
+
+		function Update() {
+
+			requestAnimationFrame(Update);
+			// controls.update();
+			stats.update();
+
+
+			Render();
+		}
+
+		function Render() {
+
+			renderer.render(scene, camera);
+		}
+
+		Start();
+		Update();
+
+	</script>
+</body>
+
+</html>
