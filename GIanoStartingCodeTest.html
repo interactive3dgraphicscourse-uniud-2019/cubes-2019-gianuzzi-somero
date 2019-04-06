@@ -46,8 +46,14 @@
         var enteredmouse;
         var mouseRotationSpeed = 0.03;
         
-
-        function cameraRotate(evt) {
+        
+        //FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
+		// (così da permettere lo spostamento lungo x e z ruotati)
+		//e di ruotare la camera lungo l'asse X così da non andare in alto e in basso 
+		// (se ruotassi il pivot, allo spostamento del pivot potrei muovermi lungo la sua asse z
+		//  che sarebbe ruotata e andrei a spostarmi lungo un asse con componente Y globale
+		//  mentre ho bisogno che la camera non si muova lungo l'asse Y globale)
+		function cameraRotate(evt) {
 			var distX = evt.screenX - positionMouse.x;
 			var distY = evt.screenY - positionMouse.y;
 
@@ -127,7 +133,40 @@
 				default:
 					break;
 			}
+        }
+        
+        function createCamera() {
+			camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+			//posizione del mouse iniziale la pongo a (0,0,0)
+			positionMouse = new THREE.Vector3(0, 0, 0);
+
+			//assegno alla variabile cameraPivot un object3D in modo da gestirlo come oggetto padre della camera
+			cameraPivot = new THREE.Object3D();
+			cameraPivot.position.set(0, 2, 0);
+			cameraPivot.add(camera);
+			scene.add(cameraPivot);
+
+			//velocità della camera è 0 quando la camera è ferma, mentre è cameraSpeed se la camera muove, in questo momento è 0 perchè all'inizio è ferma
+			cameraSpeedX = 0;
+			cameraSpeedZ = 0;
+			//di default il mouse non è premuto
+			enteredmouse = false;
+
+			//aggiungo un event listener alla finestra
+			document.addEventListener("keydown", pressedDirection, true);
+			document.addEventListener("keyup", releasedDirection, true);
+			window.addEventListener("mousedown", function changeCondition() { enteredmouse = true; }, true);
+			window.addEventListener("mouseup", function changeCondition() { enteredmouse = false; }, true);
+			window.addEventListener("mousemove", cameraRotate, true);
 		}
+
+		function controlCameraMovement() {
+			//controlla se la camera si sta muovendo in quel momento
+			if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
+				cameraPivot.translateX(cameraSpeedX);
+				cameraPivot.translateZ(cameraSpeedZ);
+			}
+        }
 
         function creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim) {
             //leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
@@ -330,33 +369,14 @@
             renderer.shadowMap.enabled = true;
             document.body.appendChild(renderer.domElement);
 
-            //posizione del mouse iniziale la pongo a (0,0,0)
-            positionMouse = new THREE.Vector3(0, 0, 0);
+            createCamera();
 
-            //assegno alla variabile cameraPivot un object3D in modo da gestirlo come oggetto padre della camera
-            cameraPivot = new THREE.Object3D();
-            cameraPivot.position.set(0, 2, 2);
-            cameraPivot.add(camera);
-            scene.add(cameraPivot);
 
-            //velocità della camera è 0 quando la camera è ferma, mentre è cameraSpeed se la camera muove, in questo momento è 0 perchè all'inizio è ferma
-            cameraSpeedX = 0;
-            cameraSpeedZ = 0;
-            //di default il mouse non è premuto
-            enteredmouse = false;
+            var tronco1 = tronco(2,1,2);
+            scene.add(tronco1);
 
-            //aggiungo un event listener alla finestra
-            document.addEventListener("keydown", pressedDirection, true);
-            document.addEventListener("keyup", releasedDirection, true);
-            window.addEventListener("mousedown", function changeCondition() { enteredmouse = true }, true);
-            window.addEventListener("mouseup", function changeCondition() { enteredmouse = false }, true);
-            window.addEventListener("mousemove", cameraRotate, true);
-
-            var cube2 = tronco(1,1,2);
-            scene.add(cube2);
-
-            var cube1 = albero(1,1,1);
-            scene.add(cube1);
+            var albero1 = albero(0,1,0);
+            scene.add(albero1);
 
             scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
 
@@ -394,7 +414,6 @@
             // uncomment if you need to draw coordinate axes when building the scene
             //Coordinates.drawAllAxes();
 
-            controls = new THREE.OrbitControls(camera);
             //controls.addEventListener('change', Render);
             //document.addEventListener('keypress', logKey);
 
@@ -406,11 +425,7 @@
 
             stats.update();
 
-          //controlla se la camera si sta muovendo in quel momento
-			if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
-				cameraPivot.translateX(cameraSpeedX);
-				cameraPivot.translateZ(cameraSpeedZ);
-			}
+            controlCameraMovement();
 
 			//controllo di uscita dai bordi dello spazio creato
 			// console.log(cameraPivot.position);
@@ -418,8 +433,6 @@
 				cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
 			if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
 				cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
-			Render();
-
             Render();
         }
 
