@@ -164,6 +164,11 @@
 			cameraPivot.add(camera);
 			scene.add(cameraPivot);
 
+			//aggiungo alla camera la croce e il testo di tutorial
+			var HUB = new THREE.Object3D();
+			var loader = new THREE.ImageLoader();
+			var crossImg = loader.load('textures/cross.png', function(image){var canvas = document.createElement('canvas'); canvas.getContext('2d').drawImage( image, 200,200);});
+
 			//velocità della camera è 0 quando la camera è ferma, mentre è cameraSpeed se la camera muove, in questo momento è 0 perchè all'inizio è ferma
 			cameraSpeedX = 0;
 			cameraSpeedZ = 0;
