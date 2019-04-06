@@ -47,6 +47,7 @@
 		//velocità di movimento della telecamera in X e Y
 		var cameraSpeed = 0.2;
 		var cameraSpeedX, cameraSpeedZ;
+		var altezzaPg = 2;
 
 		//controllo se sto premendo il mouse
 		var enteredmouse;
@@ -387,6 +388,16 @@
 				cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
 			if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
 				cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+
+			var newX = Math.round(groundNumBoxX/2 + cameraPivot.position.x);
+			var newY = Math.round(groundNumBoxZ/2 + cameraPivot.position.z);
+
+			cameraPivot.position.y = altezzaPg + data[newX+(newY*groundNumBoxZ)];
+
+
+				// x = dimX/2 + x
+				// y = dimY/2 + y
+			//(x,y) - (dimX/2,dimY/2)
 		}
 
 
@@ -429,7 +440,7 @@
 			loadedData = false;
 			var imgLoader = new THREE.ImageLoader();
 			var img = imgLoader.load(// resource URL
-				"textures/heightmap2.png",
+				"textures/heightmap3.png",
 
 				// onLoad callback
 				function (image) {
