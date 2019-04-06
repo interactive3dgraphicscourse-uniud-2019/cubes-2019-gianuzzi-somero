@@ -27,6 +27,11 @@
 
         var scene, camera, renderer, controls, stats;
 
+        //VARIABILI PER GESTIONE DI CUBI
+		var groundNumBoxX = 10;
+		var groundNumBoxZ = 100;
+        var boxDim = 1;
+        
         //posizione del mouse in game
         var positionMouse;
 
@@ -34,30 +39,32 @@
         var cameraPivot;
 
         //velocità di movimento della telecamera in X e Y
-        var cameraSpeed = 0.1;
+        var cameraSpeed = 0.2;
         var cameraSpeedX, cameraSpeedZ;
 
         //controllo se sto premendo il mouse
         var enteredmouse;
-
+        var mouseRotationSpeed = 0.03;
+        
 
         function cameraRotate(evt) {
-            var rotationSpeed = 0.06;
-            var posizioneMouse = new THREE.Vector3(0, 0, 0);
-            posizioneMouse.x = evt.screenX;
-            posizioneMouse.y = evt.screenY;
+			var distX = evt.screenX - positionMouse.x;
+			var distY = evt.screenY - positionMouse.y;
 
-            console.log("lol");
-            var distX = posizioneMouse.x - positionMouse.x;
-            var distY = posizioneMouse.y - positionMouse.y;
-            if (enteredmouse) {
-                if (distX != 0)
-                    cameraPivot.rotateY(-rotationSpeed * distX / Math.abs(distX));
-                if (distY != 0)
-                    camera.rotateX(-rotationSpeed * distY / Math.abs(distY));
-            }
-            positionMouse = posizioneMouse;
-        }
+			if (enteredmouse) {
+				if (distX > 1 || distX < -1)
+					cameraPivot.rotateY(-mouseRotationSpeed * distX / Math.abs(distX));
+				if (distY > 1 || distY < -1)
+					if (camera.rotation.x > -(Math.PI / 2) && camera.rotation.x < (Math.PI / 2))	//controllo per la rotazione della camera con blocchi a 90° in basso e in alto in modo da non poter dare il giro
+						camera.rotateX(-mouseRotationSpeed * distY / Math.abs(distY));
+					else camera.rotation.x = (-camera.rotation.x / Math.abs(camera.rotation.x)) * mouseRotationSpeed + camera.rotation.x;	//controllo per non rimanere bloccati nella situazione dell'if
+			}
+			distX = 0;
+			distY = 0;
+			positionMouse.x = evt.screenX;
+			positionMouse.y = evt.screenY;
+		}
+
 
         // FUNZIONE EVENTO PER MOVIMENTO DELLA CAMERA
         // funzione moviemnto gestita con WASD o FRECCE DIREZIONALI,
@@ -65,61 +72,168 @@
         // in più controllo che si possa gestire la rotazione della camera rispetto al centro della camera stessa con il mouse grazie alla OrbitControls
 
         function pressedDirection(evt) {
-            // console.log("pressedSomething");
-            switch (evt.keyCode) {
-                case 37: case 65:				//37 = sx   65 = a
-                    console.log("you pressed:  " + evt.key);
-                    cameraSpeedX = -cameraSpeed;
-                    // cameraMove("sx");
-                    break;
-                case 38: case 87:				//38 = up   87 = w
-                    console.log("you pressed:  " + evt.key);
-                    cameraSpeedZ = -cameraSpeed;
-                    // cameraMove("up");
-                    break;
-                case 39: case 68:				//38 = dx   68 = d
-                    console.log("you pressed:  " + evt.key);
-                    cameraSpeedX = cameraSpeed;
-                    // cameraMove("dx");
-                    break;
-                case 40: case 83:				//40 = dw   83 = s
-                    console.log("you pressed:  " + evt.key);
-                    cameraSpeedZ = cameraSpeed;
-                    // cameraMove("dw");
-                    break;
+			// console.log("pressedSomething");
+			switch (evt.keyCode) {
+				case 37: case 65:				//37 = sx   65 = a
+					// console.log("you pressed:  " + evt.key);
+					cameraSpeedX = -cameraSpeed;
+					// cameraMove("sx");
+					break;
+				case 38: case 87:				//38 = up   87 = w
+					// console.log("you pressed:  " + evt.key);
+					cameraSpeedZ = -cameraSpeed;
+					// cameraMove("up");
+					break;
+				case 39: case 68:				//38 = dx   68 = d
+					// console.log("you pressed:  " + evt.key);
+					cameraSpeedX = cameraSpeed;
+					// cameraMove("dx");
+					break;
+				case 40: case 83:				//40 = dw   83 = s
+					// console.log("you pressed:  " + evt.key);
+					cameraSpeedZ = cameraSpeed;
+					// cameraMove("dw");
+					break;
 
-                default:
-                    break;
-            }
-        }
+				default:
+					break;
+			}
+		}
 
         function releasedDirection(evt) {
-            // console.log("pressedSomething");
-            switch (evt.keyCode) {
-                case 37: case 65:				//37 = sx   65 = a
-                    console.log("you released:  " + evt.key);
-                    cameraSpeedX = 0;
-                    // cameraMove("sx");
-                    break;
-                case 38: case 87:				//38 = up   87 = w
-                    console.log("you released:  " + evt.key);
-                    cameraSpeedZ = 0;
-                    // cameraMove("up");
-                    break;
-                case 39: case 68:				//38 = dx   68 = d
-                    console.log("you released:  " + evt.key);
-                    cameraSpeedX = 0;
-                    // cameraMove("dx");
-                    break;
-                case 40: case 83:				//40 = dw   83 = s
-                    console.log("you released:  " + evt.key);
-                    cameraSpeedZ = 0;
-                    // cameraMove("dw");
-                    break;
+			// console.log("pressedSomething");
+			switch (evt.keyCode) {
+				case 37: case 65:				//37 = sx   65 = a
+					// console.log("you released:  " + evt.key);
+					cameraSpeedX = 0;
+					// cameraMove("sx");
+					break;
+				case 38: case 87:				//38 = up   87 = w
+					// console.log("you released:  " + evt.key);
+					cameraSpeedZ = 0;
+					// cameraMove("up");
+					break;
+				case 39: case 68:				//38 = dx   68 = d
+					// console.log("you released:  " + evt.key);
+					cameraSpeedX = 0;
+					// cameraMove("dx");
+					break;
+				case 40: case 83:				//40 = dw   83 = s
+					// console.log("you released:  " + evt.key);
+					cameraSpeedZ = 0;
+					// cameraMove("dw");
+					break;
 
-                default:
-                    break;
-            }
+				default:
+					break;
+			}
+		}
+
+        function albero(x,y,z) {
+            var geo = new THREE.BoxGeometry(1, 1, 1);
+            var loaderAl = new THREE.TextureLoader();
+            var albero_pos = new THREE.Object3D();
+            var textureLegno = new THREE.MeshPhongMaterial({map:loaderAl.load('textures/wood.jpg')});
+            var albero = new THREE.Group();
+            var legno = new THREE.Mesh(geo, textureLegno );
+            var textureFoglie = new THREE.MeshPhongMaterial({map:loaderAl.load('textures/leaves.jpg')});
+            var foglie = new THREE.Mesh(geo, textureFoglie );
+            
+            //OMBRE
+            legno.castShadow = true;
+            legno.receiveShadow = true;
+
+            foglie.castShadow = true;
+            foglie.receiveShadow = true;
+
+            //tronco
+            albero.add(legno.clone());
+            legno.position.y +=1;
+            albero.add(legno.clone());
+            legno.position.y +=1;
+            albero.add(legno.clone());
+            legno.position.y +=1;
+            
+            //foglie
+            foglie.position.y +=3;
+            albero.add(foglie.clone());
+            foglie.position.z += 1;
+            albero.add(foglie.clone());
+            foglie.position.x += 1;
+            albero.add(foglie.clone());
+            foglie.position.z -= 1;
+            albero.add(foglie.clone());
+            foglie.position.z -= 1;
+            albero.add(foglie.clone());
+            foglie.position.x -= 1;
+            albero.add(foglie.clone());
+            foglie.position.x -= 1;
+            albero.add(foglie.clone());
+            foglie.position.z += 1;
+            albero.add(foglie.clone());
+            foglie.position.z += 1;
+            albero.add(foglie.clone());
+            foglie.position.x += 1;
+            foglie.position.y += 1;
+            albero.add(foglie.clone());
+            foglie.position.x += 1;
+            foglie.position.z -= 1;
+            albero.add(foglie.clone());
+            foglie.position.x -= 1;
+            foglie.position.z -= 1;
+            albero.add(foglie.clone());
+            foglie.position.x -= 1;
+            foglie.position.z += 1;
+            albero.add(foglie.clone());
+            foglie.position.x += 1;
+            foglie.position.y += 1;
+            albero.add(foglie.clone());
+            albero.position.x += x;
+            albero.position.y += y;
+            albero.position.z += z;
+
+            albero_pos.add(albero);
+            
+            return albero_pos;
+
+        }
+
+        function tronco(x,y,z){
+            var geometry = new THREE.BoxGeometry(1, 1, 1);
+            var loader = new THREE.TextureLoader();
+            var materials = [
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/cutted_wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                })
+            ];
+            
+            var tronco = new THREE.Mesh(geometry, materials );
+            var tronco_pos = new THREE.Object3D();
+            tronco.castShadow = true;
+            tronco.receiveShadow = true;
+
+            tronco.position.x += x;
+            tronco.position.y += y;
+            tronco.position.z += z;
+            tronco_pos.add(tronco);
+
+            return tronco_pos;
+
         }
 
         function Start() {
@@ -161,13 +275,35 @@
             //leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
             //per i warning lanciati a console dal metodo del professore flaggato come deprecato
             var geometry = new THREE.BoxGeometry(1, 1, 1);
-            var loader = new THREE.CubeTextureLoader();
+            var loader = new THREE.TextureLoader();
             loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
-            var texture = loader.load(['textures/11635.jpg', 'textures/prova.jpg','textures/11635.jpg','textures/11635.jpg','textures/11635.jpg','textures/11635.jpg']);
+            //var textures = loader.load(['textures/11635.jpg', 'textures/prova.jpg', 'textures/11635.jpg', 'textures/11635.jpg', 'textures/11635.jpg', 'textures/11635.jpg']);
             //var texture = loader.load('textures/prova.jpg');
             //var material = new THREE.MeshPhongMaterial({ map: texture });
-            var material = new THREE.MeshBasicMaterial({ color: 0xffffff, envMap: texture });
-            var cube = new THREE.Mesh(geometry, material);
+
+            var materials = [
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/prova.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
+                })
+            ];
+
+            //var material = new THREE.MeshBasicMaterial({ color: 0xffffff, envMap: textures });
+            var cube = new THREE.Mesh(geometry, materials );
             cube.castShadow = true;
             cube.receiveShadow = true;
 
@@ -177,18 +313,23 @@
             var group = new THREE.Group();
 
             //scene.add( cube );
-            //pivot.add(cube);
-            scene.add(cube);
+            pivot.add(cube);
 
+            //scene.add(cube);
+            cube1 = albero(1,1,1);
+            scene.add(cube1);
+
+            var cube2 = tronco(1,1,2);
+            scene.add(cube2);
             //Griglia di cubi ixj            
-            /*for (i = 0; i < 1; i++) {
-                for (j = 0; j < 0; j++) {
+            for (i = 0; i < 3; i++) {
+                for (j = 0; j < 3; j++) {
                     pivot.position.z = 1 * i;
                     pivot.position.x = 1 * j;
                     group.add(pivot.clone());
                 }
             }
-            scene.add(group);*/
+            scene.add(group);
 
 
             hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
@@ -237,10 +378,19 @@
 
             stats.update();
 
-            if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
-                cameraPivot.translateX(cameraSpeedX);
-                cameraPivot.translateZ(cameraSpeedZ);
-            }
+          //controlla se la camera si sta muovendo in quel momento
+			if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
+				cameraPivot.translateX(cameraSpeedX);
+				cameraPivot.translateZ(cameraSpeedZ);
+			}
+
+			//controllo di uscita dai bordi dello spazio creato
+			// console.log(cameraPivot.position);
+			if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
+				cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
+			if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
+				cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+			Render();
 
             Render();
         }
