@@ -28,8 +28,8 @@
         var scene, camera, renderer, controls, stats;
 
         //VARIABILI PER GESTIONE DI CUBI
-		var groundNumBoxX = 10;
-		var groundNumBoxZ = 100;
+		var groundNumBoxX = 25;
+		var groundNumBoxZ = 25;
         var boxDim = 1;
         
         //posizione del mouse in game
@@ -128,6 +128,87 @@
 					break;
 			}
 		}
+
+        function creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim) {
+            //leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
+            //per i warning lanciati a console dal metodo del professore flaggato come deprecato
+            var group_scene = new THREE.Object3D();
+			var geometry = new THREE.BoxGeometry(boxDim, boxDim, boxDim);
+			var loader = new THREE.TextureLoader();
+			loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
+			var texture = loader.load('textures/11635.jpg');
+			var materials = [
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/prova.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                })
+            ];
+			var cube = new THREE.Mesh(geometry, materials);
+			cube.castShadow = true;
+			cube.receiveShadow = true;
+
+			//Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
+			//clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
+			var pivot = new THREE.Object3D();
+			var group = new THREE.Group();
+
+			//scene.add( cube );
+			pivot.add(cube);
+
+
+			for (i = 0; i < groundNumBoxX; i++) {
+				for (j = 0; j < groundNumBoxZ; j++) {
+					pivot.position.z = boxDim * j;
+					pivot.position.x = boxDim * i;
+					group.add(pivot.clone());
+				}
+			}
+			console.log(group);
+			group_scene.add(group);
+			group.translateX(-groundNumBoxX * boxDim / 2);
+			group.translateZ(-groundNumBoxZ * boxDim / 2);
+
+			//creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
+			var wallGroup = new THREE.Group();
+			var pivotWall = new THREE.Object3D();
+			pivotWall.add(cube.clone());
+			for (y = 0; y < 4; y++) {
+				for (x = 0; x < groundNumBoxX + 2; x++) {
+					for (z = 0; z < 2; z++) {
+						pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
+						pivotWall.position.x = boxDim * x;
+						pivotWall.position.y = boxDim * y;
+						wallGroup.add(pivotWall.clone());
+					}
+				}
+				for (z = 0; z < groundNumBoxZ + 2; z++) {
+					for (x = 0; x < 2; x++) {
+						pivotWall.position.x = (boxDim + groundNumBoxX) * x;
+						pivotWall.position.z = boxDim * z;
+						pivotWall.position.y = boxDim * y;
+						wallGroup.add(pivotWall.clone());
+					}
+				}
+			}
+			wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
+			wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
+            group_scene.add(wallGroup);
+            return group_scene;
+        }
 
         function albero(x,y,z) {
             var geo = new THREE.BoxGeometry(1, 1, 1);
@@ -271,66 +352,13 @@
             window.addEventListener("mouseup", function changeCondition() { enteredmouse = false }, true);
             window.addEventListener("mousemove", cameraRotate, true);
 
-
-            //leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
-            //per i warning lanciati a console dal metodo del professore flaggato come deprecato
-            var geometry = new THREE.BoxGeometry(1, 1, 1);
-            var loader = new THREE.TextureLoader();
-            loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
-            //var textures = loader.load(['textures/11635.jpg', 'textures/prova.jpg', 'textures/11635.jpg', 'textures/11635.jpg', 'textures/11635.jpg', 'textures/11635.jpg']);
-            //var texture = loader.load('textures/prova.jpg');
-            //var material = new THREE.MeshPhongMaterial({ map: texture });
-
-            var materials = [
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/prova.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/11635.jpg')
-                })
-            ];
-
-            //var material = new THREE.MeshBasicMaterial({ color: 0xffffff, envMap: textures });
-            var cube = new THREE.Mesh(geometry, materials );
-            cube.castShadow = true;
-            cube.receiveShadow = true;
-
-            //Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
-            //clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
-            var pivot = new THREE.Object3D();
-            var group = new THREE.Group();
-
-            //scene.add( cube );
-            pivot.add(cube);
-
-            //scene.add(cube);
-            cube1 = albero(1,1,1);
-            scene.add(cube1);
-
             var cube2 = tronco(1,1,2);
             scene.add(cube2);
-            //Griglia di cubi ixj            
-            for (i = 0; i < 3; i++) {
-                for (j = 0; j < 3; j++) {
-                    pivot.position.z = 1 * i;
-                    pivot.position.x = 1 * j;
-                    group.add(pivot.clone());
-                }
-            }
-            scene.add(group);
 
+            var cube1 = albero(1,1,1);
+            scene.add(cube1);
+
+            scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
 
             hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
             hemiLight.color.setHSL(0.6, 1, 0.6);
