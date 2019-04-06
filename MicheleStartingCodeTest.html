@@ -141,20 +141,8 @@
 		}
 
 
-
-		function Start() {
-			scene = new THREE.Scene();
+		function createCamera() {
 			camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-			renderer = new THREE.WebGLRenderer({ antialias: true });
-			renderer.setSize(window.innerWidth, window.innerHeight);
-			renderer.setClearColor(0xf0f0f0);
-			renderer.setPixelRatio(window.devicePixelRatio);
-			renderer.gammaInput = true;
-			renderer.gammaOutput = true;
-			renderer.shadowMap.enabled = true;
-			document.body.appendChild(renderer.domElement);
-
 			//posizione del mouse iniziale la pongo a (0,0,0)
 			positionMouse = new THREE.Vector3(0, 0, 0);
 
@@ -163,11 +151,6 @@
 			cameraPivot.position.set(0, 2, 0);
 			cameraPivot.add(camera);
 			scene.add(cameraPivot);
-
-			//aggiungo alla camera la croce e il testo di tutorial
-			var HUB = new THREE.Object3D();
-			var loader = new THREE.ImageLoader();
-			var crossImg = loader.load('textures/cross.png', function(image){var canvas = document.createElement('canvas'); canvas.getContext('2d').drawImage( image, 200,200);});
 
 			//velocità della camera è 0 quando la camera è ferma, mentre è cameraSpeed se la camera muove, in questo momento è 0 perchè all'inizio è ferma
 			cameraSpeedX = 0;
@@ -181,6 +164,69 @@
 			window.addEventListener("mousedown", function changeCondition() { enteredmouse = true; }, true);
 			window.addEventListener("mouseup", function changeCondition() { enteredmouse = false; }, true);
 			window.addEventListener("mousemove", cameraRotate, true);
+		}
+
+		function controlCameraMovement() {
+			//controlla se la camera si sta muovendo in quel momento
+			if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
+				cameraPivot.translateX(cameraSpeedX);
+				cameraPivot.translateZ(cameraSpeedZ);
+			}
+		}
+
+
+		function Start() {
+			scene = new THREE.Scene();
+			// camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+			renderer = new THREE.WebGLRenderer({ antialias: true });
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setClearColor(0xf0f0f0);
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.gammaInput = true;
+			renderer.gammaOutput = true;
+			renderer.shadowMap.enabled = true;
+			document.body.appendChild(renderer.domElement);
+
+			createCamera();
+
+			// //posizione del mouse iniziale la pongo a (0,0,0)
+			// positionMouse = new THREE.Vector3(0, 0, 0);
+
+			// //assegno alla variabile cameraPivot un object3D in modo da gestirlo come oggetto padre della camera
+			// cameraPivot = new THREE.Object3D();
+			// cameraPivot.position.set(0, 2, 0);
+			// cameraPivot.add(camera);
+			// scene.add(cameraPivot);
+
+			//aggiungo alla camera la croce e il testo di tutorial
+			// var HUB = new THREE.Object3D();
+			// var loader = new THREE.ImageUtils.LoadTexture();
+			// var crossImg = loader.load('textures/cross.png',
+			// 	function (image) { 
+			// 		var canvas = document.createElement('canvas'); 
+			// 		renderer.getContext('2d').drawImage(image, 200, 200); 
+			// 	},
+			// 	// onProgress callback currently not supported
+			// 	undefined,
+
+			// 	// onError callback
+			// 	function () {
+			// 		console.error('An error happened.');
+			// 	});
+
+			// //velocità della camera è 0 quando la camera è ferma, mentre è cameraSpeed se la camera muove, in questo momento è 0 perchè all'inizio è ferma
+			// cameraSpeedX = 0;
+			// cameraSpeedZ = 0;
+			// //di default il mouse non è premuto
+			// enteredmouse = false;
+
+			// //aggiungo un event listener alla finestra
+			// document.addEventListener("keydown", pressedDirection, true);
+			// document.addEventListener("keyup", releasedDirection, true);
+			// window.addEventListener("mousedown", function changeCondition() { enteredmouse = true; }, true);
+			// window.addEventListener("mouseup", function changeCondition() { enteredmouse = false; }, true);
+			// window.addEventListener("mousemove", cameraRotate, true);
 
 			//leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
 			//per i warning lanciati a console dal metodo del professore flaggato come deprecato
@@ -280,11 +326,13 @@
 			requestAnimationFrame(Update);
 			stats.update();
 
-			//controlla se la camera si sta muovendo in quel momento
-			if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
-				cameraPivot.translateX(cameraSpeedX);
-				cameraPivot.translateZ(cameraSpeedZ);
-			}
+			// //controlla se la camera si sta muovendo in quel momento
+			// if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
+			// 	cameraPivot.translateX(cameraSpeedX);
+			// 	cameraPivot.translateZ(cameraSpeedZ);
+			// }
+
+			controlCameraMovement();
 
 			//controllo di uscita dai bordi dello spazio creato
 			// console.log(cameraPivot.position);
