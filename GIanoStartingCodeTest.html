@@ -214,7 +214,7 @@
                     pivot.position.z = boxDim * j;
                     pivot.position.x = boxDim * i;
                     
-                    pivot.position.y = boxDim * Math.floor(data[(i*groundNumBoxZ)+j])
+                    pivot.position.y = boxDim * (Math.floor(data[(i*groundNumBoxZ)+j]))%7;
                     group.add(pivot.clone());
                 }
             }
@@ -223,7 +223,7 @@
             group_scene.add(group);
             group.translateX(-groundNumBoxX * boxDim / 2);
             group.translateZ(-groundNumBoxZ * boxDim / 2);
-
+            /*
             //creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
             var wallGroup = new THREE.Group();
             var pivotWall = new THREE.Object3D();
@@ -248,7 +248,7 @@
             }
             wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
             wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
-            group_scene.add(wallGroup);
+            group_scene.add(wallGroup);*/
             return group_scene;
         }
 
