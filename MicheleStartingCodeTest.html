@@ -32,8 +32,8 @@
 		var scene, camera, renderer, controls, stats;
 
 		//VARIABILI PER GESTIONE DI CUBI
-		var groundNumBoxX = 10;
-		var groundNumBoxZ = 100;
+		var groundNumBoxX = 25;
+		var groundNumBoxZ = 25;
 		var boxDim = 1;
 
 		//VARIABILI PER LA GESTIONE DELLA CAM
@@ -51,6 +51,10 @@
 		//controllo se sto premendo il mouse
 		var enteredmouse;
 		var mouseRotationSpeed = 0.03;
+
+		//Funzione per HeighMap
+		var data;
+		var loadedData;
 
 		//FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
 		// (così da permettere lo spostamento lungo x e z ruotati)
@@ -175,6 +179,270 @@
 		}
 
 
+		//IMPLEMENTO CODICE GIANUZZI
+		//funzioni per creazione di environment
+		function creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim) {
+			//leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
+			//per i warning lanciati a console dal metodo del professore flaggato come deprecato
+			var group_scene = new THREE.Object3D();
+			var geometry = new THREE.BoxGeometry(boxDim, boxDim, boxDim);
+			var loader = new THREE.TextureLoader();
+			loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
+			var texture = loader.load('textures/11635.jpg');
+			var materials = [
+				new THREE.MeshPhongMaterial({
+					map: loader.load('textures/11635.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: loader.load('textures/11635.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: loader.load('textures/prova.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: loader.load('textures/11635.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: loader.load('textures/11635.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: loader.load('textures/11635.jpg')
+				})
+			];
+			var cube = new THREE.Mesh(geometry, materials);
+			cube.castShadow = true;
+			cube.receiveShadow = true;
+
+			//Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
+			//clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
+			var pivot = new THREE.Object3D();
+			var group = new THREE.Group();
+
+			//scene.add( cube );
+			pivot.add(cube);
+
+
+			for (i = 0; i < groundNumBoxX; i++) {
+				for (j = 0; j < groundNumBoxZ; j++) {
+					pivot.position.z = boxDim * j;
+					pivot.position.x = boxDim * i;
+					group.add(pivot.clone());
+				}
+			}
+			console.log(group);
+			group_scene.add(group);
+			group.translateX(-groundNumBoxX * boxDim / 2);
+			group.translateZ(-groundNumBoxZ * boxDim / 2);
+
+			//creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
+			var wallGroup = new THREE.Group();
+			var pivotWall = new THREE.Object3D();
+			pivotWall.add(cube.clone());
+			for (y = 0; y < 4; y++) {
+				for (x = 0; x < groundNumBoxX + 2; x++) {
+					for (z = 0; z < 2; z++) {
+						pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
+						pivotWall.position.x = boxDim * x;
+						pivotWall.position.y = boxDim * y;
+						wallGroup.add(pivotWall.clone());
+					}
+				}
+				for (z = 0; z < groundNumBoxZ + 2; z++) {
+					for (x = 0; x < 2; x++) {
+						pivotWall.position.x = (boxDim + groundNumBoxX) * x;
+						pivotWall.position.z = boxDim * z;
+						pivotWall.position.y = boxDim * y;
+						wallGroup.add(pivotWall.clone());
+					}
+				}
+			}
+			wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
+			wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
+			group_scene.add(wallGroup);
+			return group_scene;
+		}
+
+		function albero(x, y, z) {
+			var geo = new THREE.BoxGeometry(1, 1, 1);
+			var loaderAl = new THREE.TextureLoader();
+			var albero_pos = new THREE.Object3D();
+			var textureLegno = new THREE.MeshPhongMaterial({ map: loaderAl.load('textures/wood.jpg') });
+			var albero = new THREE.Group();
+			var legno = new THREE.Mesh(geo, textureLegno);
+			var textureFoglie = new THREE.MeshPhongMaterial({ map: loaderAl.load('textures/leaves.jpg') });
+			var foglie = new THREE.Mesh(geo, textureFoglie);
+
+			//OMBRE
+			legno.castShadow = true;
+			legno.receiveShadow = true;
+
+			foglie.castShadow = true;
+			foglie.receiveShadow = true;
+
+			//tronco
+			albero.add(legno.clone());
+			legno.position.y += 1;
+			albero.add(legno.clone());
+			legno.position.y += 1;
+			albero.add(legno.clone());
+			legno.position.y += 1;
+
+			//foglie
+			foglie.position.y += 3;
+			albero.add(foglie.clone());
+			foglie.position.z += 1;
+			albero.add(foglie.clone());
+			foglie.position.x += 1;
+			albero.add(foglie.clone());
+			foglie.position.z -= 1;
+			albero.add(foglie.clone());
+			foglie.position.z -= 1;
+			albero.add(foglie.clone());
+			foglie.position.x -= 1;
+			albero.add(foglie.clone());
+			foglie.position.x -= 1;
+			albero.add(foglie.clone());
+			foglie.position.z += 1;
+			albero.add(foglie.clone());
+			foglie.position.z += 1;
+			albero.add(foglie.clone());
+			foglie.position.x += 1;
+			foglie.position.y += 1;
+			albero.add(foglie.clone());
+			foglie.position.x += 1;
+			foglie.position.z -= 1;
+			albero.add(foglie.clone());
+			foglie.position.x -= 1;
+			foglie.position.z -= 1;
+			albero.add(foglie.clone());
+			foglie.position.x -= 1;
+			foglie.position.z += 1;
+			albero.add(foglie.clone());
+			foglie.position.x += 1;
+			foglie.position.y += 1;
+			albero.add(foglie.clone());
+			albero.position.x += x;
+			albero.position.y += y;
+			albero.position.z += z;
+
+			albero_pos.add(albero);
+
+			return albero_pos;
+
+		}
+
+		function tronco(x, y, z) {
+			var geometry = new THREE.BoxGeometry(1, 1, 1);
+			var loader = new THREE.TextureLoader();
+			var materials = [
+				new THREE.MeshPhongMaterial({
+					map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: THREE.ImageUtils.loadTexture('textures/cutted_wood.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+				}),
+				new THREE.MeshPhongMaterial({
+					map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+				})
+			];
+
+			var tronco = new THREE.Mesh(geometry, materials);
+			var tronco_pos = new THREE.Object3D();
+			tronco.castShadow = true;
+			tronco.receiveShadow = true;
+
+			tronco.position.x += x;
+			tronco.position.y += y;
+			tronco.position.z += z;
+			tronco_pos.add(tronco);
+
+			return tronco_pos;
+
+		}
+
+
+
+		function controlCollisionWall() {
+			if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
+				cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
+			if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
+				cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+		}
+
+
+		//return array with height data from img, taken from: http://danni-three.blogspot.it/2013/09/threejs-heightmaps.html
+		function getHeightData(img, scale) {
+
+			if (scale == undefined) scale = 1;
+
+			var canvas = document.createElement('canvas');
+			canvas.width = img.width;
+			canvas.height = img.height;
+			var context = canvas.getContext('2d');
+
+			var size = img.width * img.height;
+			console.log(size);
+			var data = new Float32Array(size);
+
+			context.drawImage(img, 0, 0);
+
+			for (var i = 0; i < size; i++) {
+				data[i] = 0
+			}
+
+			var imgd = context.getImageData(0, 0, img.width, img.height);
+			var pix = imgd.data;
+
+			var j = 0;
+			for (var i = 0; i < pix.length; i += 4) {
+				var all = pix[i] + pix[i + 1] + pix[i + 2];  // all is in range 0 - 255*3
+				data[j++] = scale * all / 3;
+			}
+
+			return data;
+		}
+
+
+		function Loader() {
+			// uncomment if you need to draw coordinate axes when building the scene
+			// Coordinates.drawAllAxes();
+			loadedData = false;
+			var imgLoader = new THREE.ImageLoader();
+			var img = imgLoader.load(// resource URL
+				"textures/heightmap2.png",
+
+				// onLoad callback
+				function (image) {
+					// use the image, e.g. draw part of it on a canvas
+					//get height data from img
+					data = getHeightData(image, 0.1);
+					Start();
+					console.log(data);
+				},
+
+				// onProgress callback currently not supported
+				undefined,
+
+				// onError callback
+				function () {
+					console.error('An error happened.');
+				}
+			);
+
+			console.log(img);
+		}
+
+
+
 		function Start() {
 			scene = new THREE.Scene();
 			// camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -189,6 +457,16 @@
 			document.body.appendChild(renderer.domElement);
 
 			createCamera();
+
+
+			var tronco1 = tronco(1, 1, 2);
+			scene.add(tronco1);
+
+			var albero1 = albero(1, 1, 1);
+			scene.add(albero1);
+
+			scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
+
 
 			// //posizione del mouse iniziale la pongo a (0,0,0)
 			// positionMouse = new THREE.Vector3(0, 0, 0);
@@ -228,63 +506,65 @@
 			// window.addEventListener("mouseup", function changeCondition() { enteredmouse = false; }, true);
 			// window.addEventListener("mousemove", cameraRotate, true);
 
-			//leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
-			//per i warning lanciati a console dal metodo del professore flaggato come deprecato
-			var geometry = new THREE.BoxGeometry(boxDim, boxDim, boxDim);
-			var loader = new THREE.TextureLoader();
-			loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
-			var texture = loader.load('textures/11635.jpg');
-			var material = new THREE.MeshPhongMaterial({ map: texture });
-			var cube = new THREE.Mesh(geometry, material);
-			cube.castShadow = true;
-			cube.receiveShadow = true;
+			// //leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
+			// //per i warning lanciati a console dal metodo del professore flaggato come deprecato
+			// var geometry = new THREE.BoxGeometry(boxDim, boxDim, boxDim);
+			// var loader = new THREE.TextureLoader();
+			// loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
+			// var texture = loader.load('textures/11635.jpg');
+			// var material = new THREE.MeshPhongMaterial({ map: texture });
+			// var cube = new THREE.Mesh(geometry, material);
+			// cube.castShadow = true;
+			// cube.receiveShadow = true;
 
-			//Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
-			//clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
-			var pivot = new THREE.Object3D();
-			var group = new THREE.Group();
+			// //Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
+			// //clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
+			// var pivot = new THREE.Object3D();
+			// var group = new THREE.Group();
 
-			//scene.add( cube );
-			pivot.add(cube);
+			// //scene.add( cube );
+			// pivot.add(cube);
 
 
-			for (i = 0; i < groundNumBoxX; i++) {
-				for (j = 0; j < groundNumBoxZ; j++) {
-					pivot.position.z = boxDim * j;
-					pivot.position.x = boxDim * i;
-					group.add(pivot.clone());
-				}
-			}
-			console.log(group);
-			scene.add(group);
-			group.translateX(-groundNumBoxX * boxDim / 2);
-			group.translateZ(-groundNumBoxZ * boxDim / 2);
+			// for (i = 0; i < groundNumBoxX; i++) {
+			// 	for (j = 0; j < groundNumBoxZ; j++) {
+			// 		pivot.position.z = boxDim * j;
+			// 		pivot.position.x = boxDim * i;
+			// 		group.add(pivot.clone());
+			// 	}
+			// }
+			// console.log(group);
+			// scene.add(group);
+			// group.translateX(-groundNumBoxX * boxDim / 2);
+			// group.translateZ(-groundNumBoxZ * boxDim / 2);
 
-			//creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
-			var wallGroup = new THREE.Group();
-			var pivotWall = new THREE.Object3D();
-			pivotWall.add(cube.clone());
-			for (y = 0; y < 4; y++) {
-				for (x = 0; x < groundNumBoxX + 2; x++) {
-					for (z = 0; z < 2; z++) {
-						pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
-						pivotWall.position.x = boxDim * x;
-						pivotWall.position.y = boxDim * y;
-						wallGroup.add(pivotWall.clone());
-					}
-				}
-				for (z = 0; z < groundNumBoxZ + 2; z++) {
-					for (x = 0; x < 2; x++) {
-						pivotWall.position.x = (boxDim + groundNumBoxX) * x;
-						pivotWall.position.z = boxDim * z;
-						pivotWall.position.y = boxDim * y;
-						wallGroup.add(pivotWall.clone());
-					}
-				}
-			}
-			wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
-			wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
-			scene.add(wallGroup);
+			// //creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
+			// var wallGroup = new THREE.Group();
+			// var pivotWall = new THREE.Object3D();
+			// pivotWall.add(cube.clone());
+			// for (y = 0; y < 4; y++) {
+			// 	for (x = 0; x < groundNumBoxX + 2; x++) {
+			// 		for (z = 0; z < 2; z++) {
+			// 			pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
+			// 			pivotWall.position.x = boxDim * x;
+			// 			pivotWall.position.y = boxDim * y;
+			// 			wallGroup.add(pivotWall.clone());
+			// 		}
+			// 	}
+			// 	for (z = 0; z < groundNumBoxZ + 2; z++) {
+			// 		for (x = 0; x < 2; x++) {
+			// 			pivotWall.position.x = (boxDim + groundNumBoxX) * x;
+			// 			pivotWall.position.z = boxDim * z;
+			// 			pivotWall.position.y = boxDim * y;
+			// 			wallGroup.add(pivotWall.clone());
+			// 		}
+			// 	}
+			// }
+			// wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
+			// wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
+			// scene.add(wallGroup);
+
+			//TUTTO IL CODICE SOPRA TRASFERITO IN FUNZIONI
 
 			hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
 			hemiLight.color.setHSL(0.6, 1, 0.6);
@@ -317,14 +597,16 @@
 			stats.domElement.style.top = '0px';
 			document.body.appendChild(stats.domElement);
 
-			// uncomment if you need to draw coordinate axes when building the scene
-			// Coordinates.drawAllAxes();
-
 		}
 
 		function Update() {
 			requestAnimationFrame(Update);
 			stats.update();
+
+			if (data != undefined && loadedData != true) {
+				console.log(data);
+				loadedData = true;
+			}
 
 			// //controlla se la camera si sta muovendo in quel momento
 			// if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
@@ -336,10 +618,13 @@
 
 			//controllo di uscita dai bordi dello spazio creato
 			// console.log(cameraPivot.position);
-			if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
-				cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
-			if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
-				cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+			// if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
+			// 	cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
+			// if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
+			// 	cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+			controlCollisionWall();
+
+
 			Render();
 
 			// console.log(camera.rotation.x);
@@ -351,7 +636,7 @@
 			renderer.render(scene, camera);
 		}
 
-		Start();
+		Loader();
 		Update();
 
 	</script>
