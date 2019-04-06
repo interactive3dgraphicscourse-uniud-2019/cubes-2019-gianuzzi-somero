@@ -25,8 +25,18 @@
 <body>
 
 	<script>
+		//TENTO DI IMPLEMENTARE IL CODICE DI GIANNUZZI data: 06/04/19
+
+
 
 		var scene, camera, renderer, controls, stats;
+
+		//VARIABILI PER GESTIONE DI CUBI
+		var groundNumBoxX = 10;
+		var groundNumBoxZ = 100;
+		var boxDim = 1;
+
+		//VARIABILI PER LA GESTIONE DELLA CAM
 
 		//posizione del mouse in game
 		var positionMouse;
@@ -35,37 +45,12 @@
 		var cameraPivot;
 
 		//velocità di movimento della telecamera in X e Y
-		var cameraSpeed = 0.1;
+		var cameraSpeed = 0.2;
 		var cameraSpeedX, cameraSpeedZ;
 
 		//controllo se sto premendo il mouse
 		var enteredmouse;
-
-		// FUNZIONE EFFETTIVA DI MOVIMENTO CAMERA		
-		// (muovo il PIVOT perchè in questo modo muovo anche la camera che è oggetto interno al pivot)
-		// function cameraMove(direction) {
-		// 	var cameraSpeed = 2;
-		// 	switch (direction) {
-		// 		case "up":
-		// 			cameraPivot.translateZ(-cameraSpeed);
-		// 			break;
-		// 		case "dw":
-		// 			cameraPivot.translateZ(cameraSpeed);
-		// 			break;
-		// 		case "sx":
-		// 			cameraPivot.translateX(-cameraSpeed);
-		// 			break;
-		// 		case "dx":
-		// 			cameraPivot.translateX(cameraSpeed);
-		// 			break;
-
-		// 		default:
-		// 			break;
-		// 	}
-		// 	// controls.target = camera.position;
-		// 	console.log(camera.position);
-		// }
-
+		var mouseRotationSpeed = 0.03;
 
 		//FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
 		// (così da permettere lo spostamento lungo x e z ruotati)
@@ -74,21 +59,21 @@
 		//  che sarebbe ruotata e andrei a spostarmi lungo un asse con componente Y globale
 		//  mentre ho bisogno che la camera non si muova lungo l'asse Y globale)
 		function cameraRotate(evt) {
-			var rotationSpeed = 0.06;
-			var posizioneMouse = new THREE.Vector3(0, 0, 0);
-			posizioneMouse.x = evt.screenX;
-			posizioneMouse.y = evt.screenY;
+			var distX = evt.screenX - positionMouse.x;
+			var distY = evt.screenY - positionMouse.y;
 
-			console.log("lol");
-			var distX = posizioneMouse.x - positionMouse.x;
-			var distY = posizioneMouse.y - positionMouse.y;
 			if (enteredmouse) {
-				if (distX != 0)
-					cameraPivot.rotateY(-rotationSpeed * distX / Math.abs(distX));
-				if (distY != 0)
-					camera.rotateX(-rotationSpeed * distY / Math.abs(distY));
+				if (distX > 1 || distX < -1)
+					cameraPivot.rotateY(-mouseRotationSpeed * distX / Math.abs(distX));
+				if (distY > 1 || distY < -1)
+					if (camera.rotation.x > -(Math.PI / 2) && camera.rotation.x < (Math.PI / 2))	//controllo per la rotazione della camera con blocchi a 90° in basso e in alto in modo da non poter dare il giro
+						camera.rotateX(-mouseRotationSpeed * distY / Math.abs(distY));
+					else camera.rotation.x = (-camera.rotation.x / Math.abs(camera.rotation.x)) * mouseRotationSpeed + camera.rotation.x;	//controllo per non rimanere bloccati nella situazione dell'if
 			}
-			positionMouse = posizioneMouse;
+			distX = 0;
+			distY = 0;
+			positionMouse.x = evt.screenX;
+			positionMouse.y = evt.screenY;
 		}
 
 
@@ -101,22 +86,22 @@
 			// console.log("pressedSomething");
 			switch (evt.keyCode) {
 				case 37: case 65:				//37 = sx   65 = a
-					console.log("you pressed:  " + evt.key);
+					// console.log("you pressed:  " + evt.key);
 					cameraSpeedX = -cameraSpeed;
 					// cameraMove("sx");
 					break;
 				case 38: case 87:				//38 = up   87 = w
-					console.log("you pressed:  " + evt.key);
+					// console.log("you pressed:  " + evt.key);
 					cameraSpeedZ = -cameraSpeed;
 					// cameraMove("up");
 					break;
 				case 39: case 68:				//38 = dx   68 = d
-					console.log("you pressed:  " + evt.key);
+					// console.log("you pressed:  " + evt.key);
 					cameraSpeedX = cameraSpeed;
 					// cameraMove("dx");
 					break;
 				case 40: case 83:				//40 = dw   83 = s
-					console.log("you pressed:  " + evt.key);
+					// console.log("you pressed:  " + evt.key);
 					cameraSpeedZ = cameraSpeed;
 					// cameraMove("dw");
 					break;
@@ -130,22 +115,22 @@
 			// console.log("pressedSomething");
 			switch (evt.keyCode) {
 				case 37: case 65:				//37 = sx   65 = a
-					console.log("you released:  " + evt.key);
+					// console.log("you released:  " + evt.key);
 					cameraSpeedX = 0;
 					// cameraMove("sx");
 					break;
 				case 38: case 87:				//38 = up   87 = w
-					console.log("you released:  " + evt.key);
+					// console.log("you released:  " + evt.key);
 					cameraSpeedZ = 0;
 					// cameraMove("up");
 					break;
 				case 39: case 68:				//38 = dx   68 = d
-					console.log("you released:  " + evt.key);
+					// console.log("you released:  " + evt.key);
 					cameraSpeedX = 0;
 					// cameraMove("dx");
 					break;
 				case 40: case 83:				//40 = dw   83 = s
-					console.log("you released:  " + evt.key);
+					// console.log("you released:  " + evt.key);
 					cameraSpeedZ = 0;
 					// cameraMove("dw");
 					break;
@@ -175,7 +160,7 @@
 
 			//assegno alla variabile cameraPivot un object3D in modo da gestirlo come oggetto padre della camera
 			cameraPivot = new THREE.Object3D();
-			cameraPivot.position.set(0, 2, 2);
+			cameraPivot.position.set(0, 2, 0);
 			cameraPivot.add(camera);
 			scene.add(cameraPivot);
 
@@ -188,20 +173,67 @@
 			//aggiungo un event listener alla finestra
 			document.addEventListener("keydown", pressedDirection, true);
 			document.addEventListener("keyup", releasedDirection, true);
-			window.addEventListener("mousedown", function changeCondition() {enteredmouse = true}, true);
-			window.addEventListener("mouseup",  function changeCondition() {enteredmouse = false}, true);
+			window.addEventListener("mousedown", function changeCondition() { enteredmouse = true; }, true);
+			window.addEventListener("mouseup", function changeCondition() { enteredmouse = false; }, true);
 			window.addEventListener("mousemove", cameraRotate, true);
 
-
-
-			var geometry = new THREE.BoxGeometry(1, 1, 1);
-			var texture = THREE.ImageUtils.loadTexture('textures/11635.jpg');
+			//leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
+			//per i warning lanciati a console dal metodo del professore flaggato come deprecato
+			var geometry = new THREE.BoxGeometry(boxDim, boxDim, boxDim);
+			var loader = new THREE.TextureLoader();
+			loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
+			var texture = loader.load('textures/11635.jpg');
 			var material = new THREE.MeshPhongMaterial({ map: texture });
 			var cube = new THREE.Mesh(geometry, material);
 			cube.castShadow = true;
 			cube.receiveShadow = true;
 
-			scene.add(cube);
+			//Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
+			//clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
+			var pivot = new THREE.Object3D();
+			var group = new THREE.Group();
+
+			//scene.add( cube );
+			pivot.add(cube);
+
+
+			for (i = 0; i < groundNumBoxX; i++) {
+				for (j = 0; j < groundNumBoxZ; j++) {
+					pivot.position.z = boxDim * j;
+					pivot.position.x = boxDim * i;
+					group.add(pivot.clone());
+				}
+			}
+			console.log(group);
+			scene.add(group);
+			group.translateX(-groundNumBoxX * boxDim / 2);
+			group.translateZ(-groundNumBoxZ * boxDim / 2);
+
+			//creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
+			var wallGroup = new THREE.Group();
+			var pivotWall = new THREE.Object3D();
+			pivotWall.add(cube.clone());
+			for (y = 0; y < 4; y++) {
+				for (x = 0; x < groundNumBoxX + 2; x++) {
+					for (z = 0; z < 2; z++) {
+						pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
+						pivotWall.position.x = boxDim * x;
+						pivotWall.position.y = boxDim * y;
+						wallGroup.add(pivotWall.clone());
+					}
+				}
+				for (z = 0; z < groundNumBoxZ + 2; z++) {
+					for (x = 0; x < 2; x++) {
+						pivotWall.position.x = (boxDim + groundNumBoxX) * x;
+						pivotWall.position.z = boxDim * z;
+						pivotWall.position.y = boxDim * y;
+						wallGroup.add(pivotWall.clone());
+					}
+				}
+			}
+			wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
+			wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
+			scene.add(wallGroup);
 
 			hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
 			hemiLight.color.setHSL(0.6, 1, 0.6);
@@ -237,31 +269,28 @@
 			// uncomment if you need to draw coordinate axes when building the scene
 			// Coordinates.drawAllAxes();
 
-			// controls = new THREE.OrbitControls(camera);
-			//disattivo zoom della telecamera e movimento con le frecce direzionali per gestire il movimento di camera con la funzione movimento
-
-			// controls.enableZoom = false;
-			// controls.target = camera.position;
-			// controls.enableDumping = true;
-			// controls.enableKeys = false;
-			// controls.addEventListener('change', Render);
-
-
 		}
 
 		function Update() {
-
 			requestAnimationFrame(Update);
-			// controls.update();
 			stats.update();
 
-
+			//controlla se la camera si sta muovendo in quel momento
 			if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
 				cameraPivot.translateX(cameraSpeedX);
 				cameraPivot.translateZ(cameraSpeedZ);
 			}
 
+			//controllo di uscita dai bordi dello spazio creato
+			// console.log(cameraPivot.position);
+			if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
+				cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
+			if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
+				cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
 			Render();
+
+			// console.log(camera.rotation.x);
+
 		}
 
 		function Render() {
