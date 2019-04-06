@@ -32,8 +32,8 @@
 		var scene, camera, renderer, controls, stats;
 
 		//VARIABILI PER GESTIONE DI CUBI
-		var groundNumBoxX = 25;
-		var groundNumBoxZ = 25;
+		var groundNumBoxX;
+		var groundNumBoxZ;
 		var boxDim = 1;
 
 		//VARIABILI PER LA GESTIONE DELLA CAM
@@ -54,6 +54,8 @@
 
 		//Funzione per HeighMap
 		var data;
+		var imgX;
+		var imgY;
 		var loadedData;
 
 		//FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
@@ -222,43 +224,52 @@
 			pivot.add(cube);
 
 
-			for (i = 0; i < groundNumBoxX; i++) {
-				for (j = 0; j < groundNumBoxZ; j++) {
-					pivot.position.z = boxDim * j;
-					pivot.position.x = boxDim * i;
+			// for (i = 0; i < groundNumBoxX; i++) {
+			// 	for (j = 0; j < groundNumBoxZ; j++) {
+			// 		pivot.position.z = boxDim * j;
+			// 		pivot.position.x = boxDim * i;
+			// 		group.add(pivot.clone());
+			// 	}
+			// }
+			for (z = 0; z < groundNumBoxZ; z++) {
+				for (x = 0; x < groundNumBoxX; x++) {
+					pivot.position.y = boxDim * Math.floor(data[x + (groundNumBoxX * z)]);
+					pivot.position.z = boxDim * z;
+					pivot.position.x = boxDim * x;
 					group.add(pivot.clone());
 				}
 			}
+
 			console.log(group);
 			group_scene.add(group);
 			group.translateX(-groundNumBoxX * boxDim / 2);
 			group.translateZ(-groundNumBoxZ * boxDim / 2);
 
-			//creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
-			var wallGroup = new THREE.Group();
-			var pivotWall = new THREE.Object3D();
-			pivotWall.add(cube.clone());
-			for (y = 0; y < 4; y++) {
-				for (x = 0; x < groundNumBoxX + 2; x++) {
-					for (z = 0; z < 2; z++) {
-						pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
-						pivotWall.position.x = boxDim * x;
-						pivotWall.position.y = boxDim * y;
-						wallGroup.add(pivotWall.clone());
-					}
-				}
-				for (z = 0; z < groundNumBoxZ + 2; z++) {
-					for (x = 0; x < 2; x++) {
-						pivotWall.position.x = (boxDim + groundNumBoxX) * x;
-						pivotWall.position.z = boxDim * z;
-						pivotWall.position.y = boxDim * y;
-						wallGroup.add(pivotWall.clone());
-					}
-				}
-			}
-			wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
-			wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
-			group_scene.add(wallGroup);
+			// //creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
+			// var wallGroup = new THREE.Group();
+			// var pivotWall = new THREE.Object3D();
+			// pivotWall.add(cube.clone());
+			// for (y = 0; y < 4; y++) {
+			// 	for (x = 0; x < groundNumBoxX + 2; x++) {
+			// 		for (z = 0; z < 2; z++) {
+			// 			pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
+			// 			pivotWall.position.x = boxDim * x;
+			// 			pivotWall.position.y = boxDim * y;
+			// 			wallGroup.add(pivotWall.clone());
+			// 		}
+			// 	}
+			// 	for (z = 0; z < groundNumBoxZ + 2; z++) {
+			// 		for (x = 0; x < 2; x++) {
+			// 			pivotWall.position.x = (boxDim + groundNumBoxX) * x;
+			// 			pivotWall.position.z = boxDim * z;
+			// 			pivotWall.position.y = boxDim * y;
+			// 			wallGroup.add(pivotWall.clone());
+			// 		}
+			// 	}
+			// }
+			// wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
+			// wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
+			// group_scene.add(wallGroup);
 			return group_scene;
 		}
 
@@ -425,8 +436,16 @@
 					// use the image, e.g. draw part of it on a canvas
 					//get height data from img
 					data = getHeightData(image, 0.1);
+					loadedData = true;
+
+					imgX = img.width;
+					imgY = img.height;
+					groundNumBoxX = imgX;
+					groundNumBoxZ = imgY;
+					// console.log(groundNumBoxX);
+					// console.log(groundNumBoxZ);
+
 					Start();
-					console.log(data);
 				},
 
 				// onProgress callback currently not supported
@@ -438,7 +457,7 @@
 				}
 			);
 
-			console.log(img);
+			// console.log(img);
 		}
 
 
@@ -459,11 +478,11 @@
 			createCamera();
 
 
-			var tronco1 = tronco(1, 1, 2);
-			scene.add(tronco1);
+			// var tronco1 = tronco(1, 1, 2);
+			// scene.add(tronco1);
 
-			var albero1 = albero(1, 1, 1);
-			scene.add(albero1);
+			// var albero1 = albero(1, 1, 1);
+			// scene.add(albero1);
 
 			scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
 
@@ -597,38 +616,37 @@
 			stats.domElement.style.top = '0px';
 			document.body.appendChild(stats.domElement);
 
+
+			console.log(data);
+
 		}
 
 		function Update() {
 			requestAnimationFrame(Update);
-			stats.update();
+			if (loadedData != false) {
+				stats.update();
 
-			if (data != undefined && loadedData != true) {
-				console.log(data);
-				loadedData = true;
+				// //controlla se la camera si sta muovendo in quel momento
+				// if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
+				// 	cameraPivot.translateX(cameraSpeedX);
+				// 	cameraPivot.translateZ(cameraSpeedZ);
+				// }
+
+				controlCameraMovement();
+
+				//controllo di uscita dai bordi dello spazio creato
+				// console.log(cameraPivot.position);
+				// if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
+				// 	cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
+				// if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
+				// 	cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+				controlCollisionWall();
+
+
+				Render();
+
+				// console.log(camera.rotation.x);
 			}
-
-			// //controlla se la camera si sta muovendo in quel momento
-			// if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
-			// 	cameraPivot.translateX(cameraSpeedX);
-			// 	cameraPivot.translateZ(cameraSpeedZ);
-			// }
-
-			controlCameraMovement();
-
-			//controllo di uscita dai bordi dello spazio creato
-			// console.log(cameraPivot.position);
-			// if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
-			// 	cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
-			// if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
-			// 	cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
-			controlCollisionWall();
-
-
-			Render();
-
-			// console.log(camera.rotation.x);
-
 		}
 
 		function Render() {
