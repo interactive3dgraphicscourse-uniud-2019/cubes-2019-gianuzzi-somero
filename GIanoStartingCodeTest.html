@@ -25,13 +25,13 @@
 
     <script>
 
-        var scene, camera, renderer, controls, stats;
+        var scene, camera, renderer, controls, stats, data, LoadedData;
 
         //VARIABILI PER GESTIONE DI CUBI
-		var groundNumBoxX = 25;
-		var groundNumBoxZ = 25;
+        var groundNumBoxX = 50;
+        var groundNumBoxZ = 50;
         var boxDim = 1;
-        
+
         //posizione del mouse in game
         var positionMouse;
 
@@ -45,31 +45,31 @@
         //controllo se sto premendo il mouse
         var enteredmouse;
         var mouseRotationSpeed = 0.03;
-        
-        
-        //FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
-		// (così da permettere lo spostamento lungo x e z ruotati)
-		//e di ruotare la camera lungo l'asse X così da non andare in alto e in basso 
-		// (se ruotassi il pivot, allo spostamento del pivot potrei muovermi lungo la sua asse z
-		//  che sarebbe ruotata e andrei a spostarmi lungo un asse con componente Y globale
-		//  mentre ho bisogno che la camera non si muova lungo l'asse Y globale)
-		function cameraRotate(evt) {
-			var distX = evt.screenX - positionMouse.x;
-			var distY = evt.screenY - positionMouse.y;
 
-			if (enteredmouse) {
-				if (distX > 1 || distX < -1)
-					cameraPivot.rotateY(-mouseRotationSpeed * distX / Math.abs(distX));
-				if (distY > 1 || distY < -1)
-					if (camera.rotation.x > -(Math.PI / 2) && camera.rotation.x < (Math.PI / 2))	//controllo per la rotazione della camera con blocchi a 90° in basso e in alto in modo da non poter dare il giro
-						camera.rotateX(-mouseRotationSpeed * distY / Math.abs(distY));
-					else camera.rotation.x = (-camera.rotation.x / Math.abs(camera.rotation.x)) * mouseRotationSpeed + camera.rotation.x;	//controllo per non rimanere bloccati nella situazione dell'if
-			}
-			distX = 0;
-			distY = 0;
-			positionMouse.x = evt.screenX;
-			positionMouse.y = evt.screenY;
-		}
+
+        //FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
+        // (così da permettere lo spostamento lungo x e z ruotati)
+        //e di ruotare la camera lungo l'asse X così da non andare in alto e in basso 
+        // (se ruotassi il pivot, allo spostamento del pivot potrei muovermi lungo la sua asse z
+        //  che sarebbe ruotata e andrei a spostarmi lungo un asse con componente Y globale
+        //  mentre ho bisogno che la camera non si muova lungo l'asse Y globale)
+        function cameraRotate(evt) {
+            var distX = evt.screenX - positionMouse.x;
+            var distY = evt.screenY - positionMouse.y;
+
+            if (enteredmouse) {
+                if (distX > 1 || distX < -1)
+                    cameraPivot.rotateY(-mouseRotationSpeed * distX / Math.abs(distX));
+                if (distY > 1 || distY < -1)
+                    if (camera.rotation.x > -(Math.PI / 2) && camera.rotation.x < (Math.PI / 2))	//controllo per la rotazione della camera con blocchi a 90° in basso e in alto in modo da non poter dare il giro
+                        camera.rotateX(-mouseRotationSpeed * distY / Math.abs(distY));
+                    else camera.rotation.x = (-camera.rotation.x / Math.abs(camera.rotation.x)) * mouseRotationSpeed + camera.rotation.x;	//controllo per non rimanere bloccati nella situazione dell'if
+            }
+            distX = 0;
+            distY = 0;
+            positionMouse.x = evt.screenX;
+            positionMouse.y = evt.screenY;
+        }
 
 
         // FUNZIONE EVENTO PER MOVIMENTO DELLA CAMERA
@@ -78,105 +78,105 @@
         // in più controllo che si possa gestire la rotazione della camera rispetto al centro della camera stessa con il mouse grazie alla OrbitControls
 
         function pressedDirection(evt) {
-			// console.log("pressedSomething");
-			switch (evt.keyCode) {
-				case 37: case 65:				//37 = sx   65 = a
-					// console.log("you pressed:  " + evt.key);
-					cameraSpeedX = -cameraSpeed;
-					// cameraMove("sx");
-					break;
-				case 38: case 87:				//38 = up   87 = w
-					// console.log("you pressed:  " + evt.key);
-					cameraSpeedZ = -cameraSpeed;
-					// cameraMove("up");
-					break;
-				case 39: case 68:				//38 = dx   68 = d
-					// console.log("you pressed:  " + evt.key);
-					cameraSpeedX = cameraSpeed;
-					// cameraMove("dx");
-					break;
-				case 40: case 83:				//40 = dw   83 = s
-					// console.log("you pressed:  " + evt.key);
-					cameraSpeedZ = cameraSpeed;
-					// cameraMove("dw");
-					break;
+            // console.log("pressedSomething");
+            switch (evt.keyCode) {
+                case 37: case 65:				//37 = sx   65 = a
+                    // console.log("you pressed:  " + evt.key);
+                    cameraSpeedX = -cameraSpeed;
+                    // cameraMove("sx");
+                    break;
+                case 38: case 87:				//38 = up   87 = w
+                    // console.log("you pressed:  " + evt.key);
+                    cameraSpeedZ = -cameraSpeed;
+                    // cameraMove("up");
+                    break;
+                case 39: case 68:				//38 = dx   68 = d
+                    // console.log("you pressed:  " + evt.key);
+                    cameraSpeedX = cameraSpeed;
+                    // cameraMove("dx");
+                    break;
+                case 40: case 83:				//40 = dw   83 = s
+                    // console.log("you pressed:  " + evt.key);
+                    cameraSpeedZ = cameraSpeed;
+                    // cameraMove("dw");
+                    break;
 
-				default:
-					break;
-			}
-		}
+                default:
+                    break;
+            }
+        }
 
         function releasedDirection(evt) {
-			// console.log("pressedSomething");
-			switch (evt.keyCode) {
-				case 37: case 65:				//37 = sx   65 = a
-					// console.log("you released:  " + evt.key);
-					cameraSpeedX = 0;
-					// cameraMove("sx");
-					break;
-				case 38: case 87:				//38 = up   87 = w
-					// console.log("you released:  " + evt.key);
-					cameraSpeedZ = 0;
-					// cameraMove("up");
-					break;
-				case 39: case 68:				//38 = dx   68 = d
-					// console.log("you released:  " + evt.key);
-					cameraSpeedX = 0;
-					// cameraMove("dx");
-					break;
-				case 40: case 83:				//40 = dw   83 = s
-					// console.log("you released:  " + evt.key);
-					cameraSpeedZ = 0;
-					// cameraMove("dw");
-					break;
+            // console.log("pressedSomething");
+            switch (evt.keyCode) {
+                case 37: case 65:				//37 = sx   65 = a
+                    // console.log("you released:  " + evt.key);
+                    cameraSpeedX = 0;
+                    // cameraMove("sx");
+                    break;
+                case 38: case 87:				//38 = up   87 = w
+                    // console.log("you released:  " + evt.key);
+                    cameraSpeedZ = 0;
+                    // cameraMove("up");
+                    break;
+                case 39: case 68:				//38 = dx   68 = d
+                    // console.log("you released:  " + evt.key);
+                    cameraSpeedX = 0;
+                    // cameraMove("dx");
+                    break;
+                case 40: case 83:				//40 = dw   83 = s
+                    // console.log("you released:  " + evt.key);
+                    cameraSpeedZ = 0;
+                    // cameraMove("dw");
+                    break;
 
-				default:
-					break;
-			}
+                default:
+                    break;
+            }
         }
-        
+
         function createCamera() {
-			camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-			//posizione del mouse iniziale la pongo a (0,0,0)
-			positionMouse = new THREE.Vector3(0, 0, 0);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            //posizione del mouse iniziale la pongo a (0,0,0)
+            positionMouse = new THREE.Vector3(0, 0, 0);
 
-			//assegno alla variabile cameraPivot un object3D in modo da gestirlo come oggetto padre della camera
-			cameraPivot = new THREE.Object3D();
-			cameraPivot.position.set(0, 2, 0);
-			cameraPivot.add(camera);
-			scene.add(cameraPivot);
+            //assegno alla variabile cameraPivot un object3D in modo da gestirlo come oggetto padre della camera
+            cameraPivot = new THREE.Object3D();
+            cameraPivot.position.set(0, 2, 0);
+            cameraPivot.add(camera);
+            scene.add(cameraPivot);
 
-			//velocità della camera è 0 quando la camera è ferma, mentre è cameraSpeed se la camera muove, in questo momento è 0 perchè all'inizio è ferma
-			cameraSpeedX = 0;
-			cameraSpeedZ = 0;
-			//di default il mouse non è premuto
-			enteredmouse = false;
+            //velocità della camera è 0 quando la camera è ferma, mentre è cameraSpeed se la camera muove, in questo momento è 0 perchè all'inizio è ferma
+            cameraSpeedX = 0;
+            cameraSpeedZ = 0;
+            //di default il mouse non è premuto
+            enteredmouse = false;
 
-			//aggiungo un event listener alla finestra
-			document.addEventListener("keydown", pressedDirection, true);
-			document.addEventListener("keyup", releasedDirection, true);
-			window.addEventListener("mousedown", function changeCondition() { enteredmouse = true; }, true);
-			window.addEventListener("mouseup", function changeCondition() { enteredmouse = false; }, true);
-			window.addEventListener("mousemove", cameraRotate, true);
-		}
+            //aggiungo un event listener alla finestra
+            document.addEventListener("keydown", pressedDirection, true);
+            document.addEventListener("keyup", releasedDirection, true);
+            window.addEventListener("mousedown", function changeCondition() { enteredmouse = true; }, true);
+            window.addEventListener("mouseup", function changeCondition() { enteredmouse = false; }, true);
+            window.addEventListener("mousemove", cameraRotate, true);
+        }
 
-		function controlCameraMovement() {
-			//controlla se la camera si sta muovendo in quel momento
-			if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
-				cameraPivot.translateX(cameraSpeedX);
-				cameraPivot.translateZ(cameraSpeedZ);
-			}
+        function controlCameraMovement() {
+            //controlla se la camera si sta muovendo in quel momento
+            if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
+                cameraPivot.translateX(cameraSpeedX);
+                cameraPivot.translateZ(cameraSpeedZ);
+            }
         }
 
         function creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim) {
             //leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
             //per i warning lanciati a console dal metodo del professore flaggato come deprecato
             var group_scene = new THREE.Object3D();
-			var geometry = new THREE.BoxGeometry(boxDim, boxDim, boxDim);
-			var loader = new THREE.TextureLoader();
-			loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
-			var texture = loader.load('textures/11635.jpg');
-			var materials = [
+            var geometry = new THREE.BoxGeometry(boxDim, boxDim, boxDim);
+            var loader = new THREE.TextureLoader();
+            loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
+            var texture = loader.load('textures/11635.jpg');
+            var materials = [
                 new THREE.MeshPhongMaterial({
                     map: loader.load('textures/11635.jpg')
                 }),
@@ -196,69 +196,72 @@
                     map: loader.load('textures/11635.jpg')
                 })
             ];
-			var cube = new THREE.Mesh(geometry, materials);
-			cube.castShadow = true;
-			cube.receiveShadow = true;
+            var cube = new THREE.Mesh(geometry, materials);
+            cube.castShadow = true;
+            cube.receiveShadow = true;
 
-			//Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
-			//clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
-			var pivot = new THREE.Object3D();
-			var group = new THREE.Group();
+            //Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
+            //clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
+            var pivot = new THREE.Object3D();
+            var group = new THREE.Group();
 
-			//scene.add( cube );
-			pivot.add(cube);
+            //scene.add( cube );
+            pivot.add(cube);
 
 
-			for (i = 0; i < groundNumBoxX; i++) {
-				for (j = 0; j < groundNumBoxZ; j++) {
-					pivot.position.z = boxDim * j;
-					pivot.position.x = boxDim * i;
-					group.add(pivot.clone());
-				}
-			}
-			console.log(group);
-			group_scene.add(group);
-			group.translateX(-groundNumBoxX * boxDim / 2);
-			group.translateZ(-groundNumBoxZ * boxDim / 2);
+            for (i = 0; i < groundNumBoxX; i++) {
+                for (j = 0; j < groundNumBoxZ; j++) {
+                    pivot.position.z = boxDim * j;
+                    pivot.position.x = boxDim * i;
+                    
+                    pivot.position.y = boxDim * Math.floor(data[(i*groundNumBoxZ)+j])
+                    group.add(pivot.clone());
+                }
+            }
 
-			//creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
-			var wallGroup = new THREE.Group();
-			var pivotWall = new THREE.Object3D();
-			pivotWall.add(cube.clone());
-			for (y = 0; y < 4; y++) {
-				for (x = 0; x < groundNumBoxX + 2; x++) {
-					for (z = 0; z < 2; z++) {
-						pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
-						pivotWall.position.x = boxDim * x;
-						pivotWall.position.y = boxDim * y;
-						wallGroup.add(pivotWall.clone());
-					}
-				}
-				for (z = 0; z < groundNumBoxZ + 2; z++) {
-					for (x = 0; x < 2; x++) {
-						pivotWall.position.x = (boxDim + groundNumBoxX) * x;
-						pivotWall.position.z = boxDim * z;
-						pivotWall.position.y = boxDim * y;
-						wallGroup.add(pivotWall.clone());
-					}
-				}
-			}
-			wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
-			wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
+            console.log(group);
+            group_scene.add(group);
+            group.translateX(-groundNumBoxX * boxDim / 2);
+            group.translateZ(-groundNumBoxZ * boxDim / 2);
+
+            //creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
+            var wallGroup = new THREE.Group();
+            var pivotWall = new THREE.Object3D();
+            pivotWall.add(cube.clone());
+            for (y = 0; y < 4; y++) {
+                for (x = 0; x < groundNumBoxX + 2; x++) {
+                    for (z = 0; z < 2; z++) {
+                        pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
+                        pivotWall.position.x = boxDim * x;
+                        pivotWall.position.y = boxDim * y;
+                        wallGroup.add(pivotWall.clone());
+                    }
+                }
+                for (z = 0; z < groundNumBoxZ + 2; z++) {
+                    for (x = 0; x < 2; x++) {
+                        pivotWall.position.x = (boxDim + groundNumBoxX) * x;
+                        pivotWall.position.z = boxDim * z;
+                        pivotWall.position.y = boxDim * y;
+                        wallGroup.add(pivotWall.clone());
+                    }
+                }
+            }
+            wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
+            wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
             group_scene.add(wallGroup);
             return group_scene;
         }
 
-        function albero(x,y,z) {
+        function albero(x, y, z) {
             var geo = new THREE.BoxGeometry(1, 1, 1);
             var loaderAl = new THREE.TextureLoader();
             var albero_pos = new THREE.Object3D();
-            var textureLegno = new THREE.MeshPhongMaterial({map:loaderAl.load('textures/wood.jpg')});
+            var textureLegno = new THREE.MeshPhongMaterial({ map: loaderAl.load('textures/wood.jpg') });
             var albero = new THREE.Group();
-            var legno = new THREE.Mesh(geo, textureLegno );
-            var textureFoglie = new THREE.MeshPhongMaterial({map:loaderAl.load('textures/leaves.jpg')});
-            var foglie = new THREE.Mesh(geo, textureFoglie );
-            
+            var legno = new THREE.Mesh(geo, textureLegno);
+            var textureFoglie = new THREE.MeshPhongMaterial({ map: loaderAl.load('textures/leaves.jpg') });
+            var foglie = new THREE.Mesh(geo, textureFoglie);
+
             //OMBRE
             legno.castShadow = true;
             legno.receiveShadow = true;
@@ -268,14 +271,14 @@
 
             //tronco
             albero.add(legno.clone());
-            legno.position.y +=1;
+            legno.position.y += 1;
             albero.add(legno.clone());
-            legno.position.y +=1;
+            legno.position.y += 1;
             albero.add(legno.clone());
-            legno.position.y +=1;
-            
+            legno.position.y += 1;
+
             //foglie
-            foglie.position.y +=3;
+            foglie.position.y += 3;
             albero.add(foglie.clone());
             foglie.position.z += 1;
             albero.add(foglie.clone());
@@ -313,12 +316,12 @@
             albero.position.z += z;
 
             albero_pos.add(albero);
-            
+
             return albero_pos;
 
         }
 
-        function tronco(x,y,z){
+        function tronco(x, y, z) {
             var geometry = new THREE.BoxGeometry(1, 1, 1);
             var loader = new THREE.TextureLoader();
             var materials = [
@@ -341,8 +344,8 @@
                     map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
                 })
             ];
-            
-            var tronco = new THREE.Mesh(geometry, materials );
+
+            var tronco = new THREE.Mesh(geometry, materials);
             var tronco_pos = new THREE.Object3D();
             tronco.castShadow = true;
             tronco.receiveShadow = true;
@@ -354,6 +357,70 @@
 
             return tronco_pos;
 
+        }
+
+        //return array with height data from img, taken from: http://danni-three.blogspot.it/2013/09/threejs-heightmaps.html
+        function getHeightData(img, scale) {
+
+            if (scale == undefined) scale = 1;
+
+            var canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            var context = canvas.getContext('2d');
+
+            var size = img.width * img.height;
+            console.log(size);
+            var data = new Float32Array(size);
+
+            context.drawImage(img, 0, 0);
+
+            for (var i = 0; i < size; i++) {
+                data[i] = 0
+            }
+
+            var imgd = context.getImageData(0, 0, img.width, img.height);
+            var pix = imgd.data;
+
+            var j = 0;
+            for (var i = 0; i < pix.length; i += 4) {
+                var all = pix[i] + pix[i + 1] + pix[i + 2];  // all is in range 0 - 255*3
+                data[j++] = scale * all / 3;
+            }
+
+            return data;
+        }
+
+
+        function Loader() {
+            // uncomment if you need to draw coordinate axes when building the scene
+            // Coordinates.drawAllAxes();
+            loadedData = false;
+            var imgLoader = new THREE.ImageLoader();
+            var img = imgLoader.load(// resource URL
+                "textures/heightmap3.png",
+
+                // onLoad callback
+                function (image) {
+                    // use the image, e.g. draw part of it on a canvas
+                    //get height data from img
+                    data = getHeightData(image, 0.1);
+                    Start();
+                    console.log(data);
+                    loadedData = true;
+                    console.log(loadedData);
+                },
+
+                // onProgress callback currently not supported
+                undefined,
+
+                // onError callback
+                function () {
+                    console.error('An error happened.');
+                }
+            );
+
+            console.log(img);
         }
 
         function Start() {
@@ -372,10 +439,10 @@
             createCamera();
 
 
-            var tronco1 = tronco(2,1,2);
+            var tronco1 = tronco(2, 1, 2);
             scene.add(tronco1);
 
-            var albero1 = albero(0,1,0);
+            var albero1 = albero(0, 1, 0);
             scene.add(albero1);
 
             scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
@@ -421,47 +488,30 @@
 
         function Update() {
             requestAnimationFrame(Update);
-            //controls.update();
 
-            stats.update();
+            if (loadedData) {
+                //controls.update();
 
-            controlCameraMovement();
+                stats.update();
 
-			//controllo di uscita dai bordi dello spazio creato
-			// console.log(cameraPivot.position);
-			if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
-				cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
-			if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
-				cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
-            Render();
+                controlCameraMovement();
+
+                //controllo di uscita dai bordi dello spazio creato
+                // console.log(cameraPivot.position);
+                if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
+                    cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
+                if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
+                    cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+                Render();
+            }
         }
 
         function Render() {
 
             renderer.render(scene, camera);
         }
-        //funzione di movimento telecamera VECCHIA, non uso il cameraMove(), impiego invece il position
 
-        /*function logKey(e) {
-            switch (e.key) {
-                case "w":
-                    camera.position.z += 0.5;
-                    break;
-                case "s":
-                    camera.position.x -= 0.5;
-                    break;
-                case "a":
-                    camera.position.x += 0.5;
-                    break;
-                case "d":
-                    camera.position.z -= 0.5;
-                    break;
-                default:
-                    break;
-            }
-        }*/
-
-        Start();
+        Loader();
         Update();
 
     </script>
