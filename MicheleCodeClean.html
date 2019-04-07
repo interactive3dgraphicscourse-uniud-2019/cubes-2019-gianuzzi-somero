@@ -27,6 +27,16 @@
 
 		var scene, camera, renderer, controls, stats;
 
+		//INSERIMENTO DELLA VARIABILE TEMPORALE:
+		var time;
+		var timeStart;
+		var deltaTime;
+
+		var endedIn = false;
+		var fallingY;
+		var acceleration = 0.00098;
+
+
 		//VARIABILI PER GESTIONE DI CUBI
 		var groundNumBoxX;
 		var groundNumBoxZ;
@@ -280,9 +290,9 @@
 			// for (y = 0; y < dimMaxY+2; y++) {
 			for (x = 0; x < groundNumBoxX; x++) {
 				for (z = 0; z < 2; z++) {
-					pivotWall.position.z = (boxDim + groundNumBoxZ) * z-1;
+					pivotWall.position.z = (boxDim + groundNumBoxZ) * z - 1;
 					pivotWall.position.x = boxDim * x;
-					pivotWall.position.y = boxDim * Math.floor(data[x + ((groundNumBoxX) * (groundNumBoxZ-1) * z)]);
+					pivotWall.position.y = boxDim * Math.floor(data[x + ((groundNumBoxX) * (groundNumBoxZ - 1) * z)]);
 					pivotWall.position.y += 1;
 					wallGroup.add(pivotWall.clone());
 					pivotWall.position.y += 1;
@@ -291,9 +301,9 @@
 			}
 			for (z = 0; z < groundNumBoxZ; z++) {
 				for (x = 0; x < 2; x++) {
-					pivotWall.position.x = (boxDim + groundNumBoxX) * x-1;
+					pivotWall.position.x = (boxDim + groundNumBoxX) * x - 1;
 					pivotWall.position.z = boxDim * z;
-					pivotWall.position.y = boxDim * Math.floor(data[x * (groundNumBoxX-1) + ((groundNumBoxX) * z)]);
+					pivotWall.position.y = boxDim * Math.floor(data[x * (groundNumBoxX - 1) + ((groundNumBoxX) * z)]);
 					pivotWall.position.y += 1;
 					wallGroup.add(pivotWall.clone());
 					pivotWall.position.y += 1;
@@ -803,7 +813,7 @@
 			// skyMat.color = new THREE.Color( 'cyan' );
 			// skyMat.color.setRGB(0, 0.6, 0.9);
 			var sky = new THREE.Mesh(skyGeo, skyMat);
-			sky.position.y = 60;
+			sky.position.y = 103;
 			sky.rotation.x = Math.PI / 2;
 
 			scene.add(sky);
@@ -818,6 +828,11 @@
 
 			// uncomment if you need to draw coordinate axes when building the scene
 			// Coordinates.drawAllAxes();
+			timeStart = Date.now();
+			deltaTime = timeStart;
+			time = deltaTime;
+			fallingY = 100;
+			camera.rotateX(Math.PI/2);
 
 		}
 
@@ -838,30 +853,90 @@
 
 		// }
 
+		function EnterCamera() {
+			if (!endedIn) {
+				requestAnimationFrame(EnterCamera);
+				var newTime = Date.now() - deltaTime;
+				// console.log(deltaTime);
+				if (loadedHeighMap != false && loadedImg1 != false && loadedImg2 != false) {
+					loadedData = true
+					Start();
+					loadedHeighMap = false;
+					loadedImg1 = false;
+					loadedImg2 = false;
+				}
+
+				if (loadedData != false) {
+					//aggiorna le statistiche FPS
+					stats.update();
+
+					if (fallingY > 2) {
+						fallingY -= acceleration * (Date.now() - timeStart);
+						console.log(fallingY);
+						camera.rotateX(newTime/100);
+						cameraPivot.position.set(0, fallingY, 0);
+						time = 6000;
+					}
+					else {
+						cameraPivot.position.set(0, 2, 0);
+						time-=newTime;
+						if (time>5000){
+							time = Date.now()-timeStart;
+							camera.focus = 100;
+						}
+						else if (time>3000 && time <=5000){
+							// camera.focus = 100;
+							camera.rotation.set(0,0,0);
+						}
+						else
+						endedIn = true;
+						
+					}
+
+
+
+					Render();
+					deltaTime = Date.now();
+					// time = Date.now();
+				}
+
+
+
+			}
+			else
+				requestAnimationFrame(Update);
+
+		}
+
+
+
+
+
 		function Update() {
 
 			requestAnimationFrame(Update);
 
-			if (loadedHeighMap != false && loadedImg1 != false && loadedImg2 != false) {
-				loadedData = true
-				Start();
-				loadedHeighMap = false;
-				loadedImg1 = false;
-				loadedImg2 = false;
-			}
+			// console.log("i'm here");
+			// if (loadedHeighMap != false && loadedImg1 != false && loadedImg2 != false) {
+			// 	loadedData = true
+			// 	Start();
+			// 	loadedHeighMap = false;
+			// 	loadedImg1 = false;
+			// 	loadedImg2 = false;
+			// }
 
-			if (loadedData != false) {
-				//aggiorna le statistiche FPS
-				stats.update();
+			// if (loadedData != false) {
+			// 	//aggiorna le statistiche FPS
+			stats.update();
 
-				// //controlla se la camera si sta muovendo in quel momento
-				controlCameraMovement();
+			// 	// //controlla se la camera si sta muovendo in quel momento
+			controlCameraMovement();
 
-				//controllo di uscita dai bordi dello spazio creato
-				controlCollisionWall();
+			// 	//controllo di uscita dai bordi dello spazio creato
+			controlCollisionWall();
 
-				Render();
-			}
+			Render();
+			// }
 		}
 
 		function Render() {
@@ -870,7 +945,8 @@
 		}
 
 		Loader();
-		Update();
+		EnterCamera();
+		// Update();
 
 	</script>
 </body>
