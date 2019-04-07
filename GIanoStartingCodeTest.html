@@ -217,15 +217,14 @@
 
             for (i = 0; i < groundNumBoxX; i++) {
                 for (j = 0; j < groundNumBoxZ; j++) {
-                    pivot.position.z = boxDim * j;
-                    pivot.position.x = boxDim * i;
-
+                    pivot.position.z = boxDim * i;
+                    pivot.position.x = boxDim * j;
                     pivot.position.y = boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]));
                     group.add(pivot.clone());
 
                     // console.log(data[(i * groundNumBoxZ) + j]);
                     //Codice per stampare quadrati di rempimento
-                    /*
+
                     var dist1 = 0;
                     var dist2 = 0;
                     var dist3 = 0;
@@ -239,11 +238,12 @@
                         dist2 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i * groundNumBoxZ) + j + 1]);
                     }
                     if (i > 0) {
-                        dist3 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i - 1 * groundNumBoxZ) + j]);
+                        dist3 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[((i - 1) * groundNumBoxZ) + j]);
                     }
-                    if (i < groundNumBoxZ) {
-                        dist4 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i + 1 * groundNumBoxZ) + j]);
+                    if (i < groundNumBoxX) {
+                        dist4 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[((i + 1) * groundNumBoxZ) + j]);
                     }
+
                     var sottocubi = Math.max(dist1, dist2, dist3, dist4);
                     if (sottocubi > 1) {
                         console.log(sottocubi);
@@ -254,7 +254,7 @@
                         }
 
                     }
-                    */
+
                 }
             }
 
@@ -615,7 +615,7 @@
                 function (image) {
                     // use the image, e.g. draw part of it on a canvas
                     //get height data from img
-                    data = getHeightData(image, 0.1);
+                    data = getHeightData(image, 0.05);
                     Start();
                     console.log(data);
                     loadedData = true;
@@ -650,13 +650,19 @@
             createCamera();
 
 
-            var tronco1 = tronco(2, 1, 2);
+            var tronco1 = tronco(-2, 1, -2);
             scene.add(tronco1);
+            var alberox = -4;
+            var alberoz = 0;
 
-            var albero1 = albero(0, 1, 0);
+            var trasp_alberox = alberox + groundNumBoxX / 2;
+            var trasp_alberoz = groundNumBoxX / 2 - alberoz;
+            var alberoY = boxDim * Math.floor(data[trasp_alberox + (groundNumBoxX * trasp_alberoz)]);
+            console.log(alberoY);
+            var albero1 = albero(alberox,1, alberoz);
             scene.add(albero1);
 
-            var casa = House(-8, 1, 4);
+            var casa = House(2, 1, -8);
             scene.add(casa);
 
             scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
