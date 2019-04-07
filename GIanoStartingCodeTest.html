@@ -25,7 +25,7 @@
 
     <script>
 
-        var scene, camera, renderer, controls, stats, data, LoadedData;
+        var scene, camera, renderer, controls, stats;
 
         //VARIABILI PER GESTIONE DI CUBI
         var groundNumBoxX = 50;
@@ -41,11 +41,17 @@
         //velocità di movimento della telecamera in X e Y
         var cameraSpeed = 0.2;
         var cameraSpeedX, cameraSpeedZ;
+        var altezzaPg = 2;
 
         //controllo se sto premendo il mouse
         var enteredmouse;
         var mouseRotationSpeed = 0.03;
 
+        //Funzione per HeighMap
+        var data;
+        var imgX;
+        var imgY;
+        var loadedData;
 
         //FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
         // (così da permettere lo spostamento lungo x e z ruotati)
@@ -213,9 +219,42 @@
                 for (j = 0; j < groundNumBoxZ; j++) {
                     pivot.position.z = boxDim * j;
                     pivot.position.x = boxDim * i;
-                    
-                    pivot.position.y = boxDim * (Math.floor(data[(i*groundNumBoxZ)+j]))%7;
+
+                    pivot.position.y = boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]));
                     group.add(pivot.clone());
+
+                    // console.log(data[(i * groundNumBoxZ) + j]);
+                    //Codice per stampare quadrati di rempimento
+                    /*
+                    var dist1 = 0;
+                    var dist2 = 0;
+                    var dist3 = 0;
+                    var dist4 = 0;
+
+
+                    if (j > 0) {
+                        dist1 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i * groundNumBoxZ) + j - 1]);
+                    }
+                    if (j < groundNumBoxZ) {
+                        dist2 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i * groundNumBoxZ) + j + 1]);
+                    }
+                    if (i > 0) {
+                        dist3 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i - 1 * groundNumBoxZ) + j]);
+                    }
+                    if (i < groundNumBoxZ) {
+                        dist4 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i + 1 * groundNumBoxZ) + j]);
+                    }
+                    var sottocubi = Math.max(dist1, dist2, dist3, dist4);
+                    if (sottocubi > 1) {
+                        console.log(sottocubi);
+                        for (k = 0; k < sottocubi; k++) {
+                            console.log("k" + k);
+                            pivot.position.y -= 1;
+                            group.add(pivot.clone());
+                        }
+
+                    }
+                    */
                 }
             }
 
@@ -223,32 +262,7 @@
             group_scene.add(group);
             group.translateX(-groundNumBoxX * boxDim / 2);
             group.translateZ(-groundNumBoxZ * boxDim / 2);
-            /*
-            //creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
-            var wallGroup = new THREE.Group();
-            var pivotWall = new THREE.Object3D();
-            pivotWall.add(cube.clone());
-            for (y = 0; y < 4; y++) {
-                for (x = 0; x < groundNumBoxX + 2; x++) {
-                    for (z = 0; z < 2; z++) {
-                        pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
-                        pivotWall.position.x = boxDim * x;
-                        pivotWall.position.y = boxDim * y;
-                        wallGroup.add(pivotWall.clone());
-                    }
-                }
-                for (z = 0; z < groundNumBoxZ + 2; z++) {
-                    for (x = 0; x < 2; x++) {
-                        pivotWall.position.x = (boxDim + groundNumBoxX) * x;
-                        pivotWall.position.z = boxDim * z;
-                        pivotWall.position.y = boxDim * y;
-                        wallGroup.add(pivotWall.clone());
-                    }
-                }
-            }
-            wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
-            wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
-            group_scene.add(wallGroup);*/
+
             return group_scene;
         }
 
@@ -326,22 +340,22 @@
             var loader = new THREE.TextureLoader();
             var materials = [
                 new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                    map: loader.load('textures/wood.jpg')
                 }),
                 new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                    map: loader.load('textures/wood.jpg')
                 }),
                 new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/cutted_wood.jpg')
+                    map: loader.load('textures/cutted_wood.jpg')
                 }),
                 new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                    map: loader.load('textures/wood.jpg')
                 }),
                 new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                    map: loader.load('textures/wood.jpg')
                 }),
                 new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
+                    map: loader.load('textures/wood.jpg')
                 })
             ];
 
@@ -357,6 +371,203 @@
 
             return tronco_pos;
 
+        }
+
+        function House(x, y, z) {
+            var geometry = new THREE.BoxGeometry(1, 1, 1);
+            var loader = new THREE.TextureLoader();
+            var materials_wall = new THREE.MeshPhongMaterial({
+                map: loader.load('textures/wall.jpg')
+            });
+
+            var materials_roof = new THREE.MeshPhongMaterial({
+                map: loader.load('textures/moss.jpg')
+            });
+
+            var muro = new THREE.Mesh(geometry, materials_roof);
+            var roof = new THREE.Mesh(geometry, materials_wall);
+            var casa = new THREE.Object3D();
+            var casa_pos = new THREE.Object3D();
+
+            muro.castShadow = true;
+            muro.receiveShadow = true;
+
+            roof.castShadow = true;
+            roof.receiveShadow = true;
+
+            //perimetro altezza1
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 2;
+            muro.position.y += 1;
+
+
+            //perimetro altezza2
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 2;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 2;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 2;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 2;
+            casa.add(muro.clone());
+            muro.position.x -= 2;
+            muro.position.y += 1;
+
+            //perimetro altezza3
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+
+            muro.position.y += 1;
+            casa.add(muro.clone());
+            muro.position.z += 4;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 4;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z += 4;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            muro.position.y += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 4;
+            casa.add(muro.clone());
+
+
+            //codice per il tetto, molto brutto esteticamente ma se fatto a punta vengono TROPPI cubi
+
+            roof.position.y += 2;
+            roof.position.x -= 1;
+            roof.position.z -= 1;
+
+            for (var i = 0; i < 3; i++) {
+                for (var j = 0; j < 7; j++) {
+                    casa.add(roof.clone());
+                    roof.position.y += 1;
+                    casa.add(roof.clone());
+                    roof.position.y -= 1;
+
+                    roof.position.x += 6 - 2 * i;
+                    casa.add(roof.clone());
+                    roof.position.y += 1;
+                    casa.add(roof.clone());
+
+
+                    roof.position.x -= 6 - 2 * i;
+                    roof.position.y -= 1;
+                    roof.position.z += 1;
+                }
+                roof.position.x += 1;
+                roof.position.z -= 7;
+                roof.position.y += 1;
+            }
+            for (var j = 0; j < 7; j++) {
+                casa.add(roof.clone());
+                roof.position.y += 1;
+                casa.add(roof.clone());
+
+                roof.position.y -= 1;
+                roof.position.z += 1;
+            }
+
+
+            casa.position.x += x;
+            casa.position.y += y;
+            casa.position.z += z;
+            //casa.rotation.y += Math.PI;
+            casa_pos.add(casa);
+
+            return casa_pos;
+
+        }
+
+        function controlCollisionWall() {
+            if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
+                cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
+            if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
+                cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+
+            var newX = Math.round(groundNumBoxX / 2 + cameraPivot.position.x);
+            var newY = Math.round(groundNumBoxZ / 2 + cameraPivot.position.z);
+
+            cameraPivot.position.y = altezzaPg + data[newX + (newY * groundNumBoxZ)];
+
+
+            // x = dimX/2 + x
+            // y = dimY/2 + y
+            //(x,y) - (dimX/2,dimY/2)
         }
 
         //return array with height data from img, taken from: http://danni-three.blogspot.it/2013/09/threejs-heightmaps.html
@@ -445,6 +656,9 @@
             var albero1 = albero(0, 1, 0);
             scene.add(albero1);
 
+            var casa = House(-8, 1, 4);
+            scene.add(casa);
+
             scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
 
             hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
@@ -495,13 +709,7 @@
                 stats.update();
 
                 controlCameraMovement();
-
-                //controllo di uscita dai bordi dello spazio creato
-                // console.log(cameraPivot.position);
-                if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
-                    cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
-                if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
-                    cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+                controlCollisionWall();
                 Render();
             }
         }
