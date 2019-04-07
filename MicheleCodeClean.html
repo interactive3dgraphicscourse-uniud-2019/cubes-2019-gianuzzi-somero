@@ -23,7 +23,6 @@
 </head>
 
 <body>
-
 	<script>
 
 		var scene, camera, renderer, controls, stats;
@@ -58,6 +57,10 @@
 		var loadedHeighMap;
 
 		var loadedData;
+
+
+		//variabile per la gestione dell'altezza
+		var dimMaxY;
 
 		//FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
 		// (così da permettere lo spostamento lungo x e z ruotati)
@@ -228,44 +231,79 @@
 
 			for (z = 0; z < groundNumBoxZ; z++) {
 				for (x = 0; x < groundNumBoxX; x++) {
-					pivot.position.y = boxDim * Math.floor(data[x + (groundNumBoxX * z)]);
 					pivot.position.z = boxDim * z;
 					pivot.position.x = boxDim * x;
-					group.add(pivot.clone());
+					// pivot.position.y = boxDim * Math.floor(data[x + (groundNumBoxX * z)]);
+					// group.add(pivot.clone());
+					var posizioneY = boxDim * Math.floor(data[x + (groundNumBoxX * z)]);
+					for (y = 0; y < posizioneY + boxDim; y += boxDim) {
+						pivot.position.y = y;
+						group.add(pivot.clone());
+					}
 				}
 			}
+			// var ogg1 = 0;
+			// console.log("prima del ciclo" + group.children.length);
+			// do {
+			// 	// for (var ogg1 = 0; ogg1 < group.children.length; ogg1++) {
 
-			console.log(group);
+			// 	var count = 0;
+			// 	var ogg2 = 0;
+			// 	do {
+			// 		// for (var ogg2 = 0; ogg2 < group.children.length; ogg2++) {
+			// 		if (group.children[ogg1].y == group.children[ogg2].y) {
+			// 			if ((group.children[ogg1].x < group.children[ogg2].x + boxDim && group.children[ogg1].x > group.children[ogg2].x + boxDim ) ||
+			// 				group.children[ogg1].x == group.children[ogg2].x - boxDim ||
+			// 				group.children[ogg1].z == group.children[ogg2].z - boxDim ||
+			// 				group.children[ogg1].z == group.children[ogg2].z - boxDim) {
+			// 				count++;
+			// 			}
+			// 			if (count > 3) group.remove(group.children[ogg1]);
+			// 		}
+			// 		ogg2++
+			// 	} while (ogg2 < group.children.length);
+			// 	ogg1++;
+			// 	console.log("durante il ciclo " + group.children.length);
+			// } while (ogg1 < group.children.length);
+
+
+			// console.log("dopo il ciclo " + group.children.length);
 			group_scene.add(group);
-			group.translateX(-groundNumBoxX * boxDim / 2);
-			group.translateZ(-groundNumBoxZ * boxDim / 2);
+			group.translateX(Math.floor(-groundNumBoxX * boxDim / 2));
+			group.translateZ(Math.floor(-groundNumBoxZ * boxDim / 2));
 
 			//i finti muri devono partire dai bordi dell'immagine andranno fatti
 			// //creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
-			// var wallGroup = new THREE.Group();
-			// var pivotWall = new THREE.Object3D();
-			// pivotWall.add(cube.clone());
-			// for (y = 0; y < 4; y++) {
-			// 	for (x = 0; x < groundNumBoxX + 2; x++) {
-			// 		for (z = 0; z < 2; z++) {
-			// 			pivotWall.position.z = (boxDim + groundNumBoxZ) * z;
-			// 			pivotWall.position.x = boxDim * x;
-			// 			pivotWall.position.y = boxDim * y;
-			// 			wallGroup.add(pivotWall.clone());
-			// 		}
-			// 	}
-			// 	for (z = 0; z < groundNumBoxZ + 2; z++) {
-			// 		for (x = 0; x < 2; x++) {
-			// 			pivotWall.position.x = (boxDim + groundNumBoxX) * x;
-			// 			pivotWall.position.z = boxDim * z;
-			// 			pivotWall.position.y = boxDim * y;
-			// 			wallGroup.add(pivotWall.clone());
-			// 		}
-			// 	}
-			// }
-			// wallGroup.translateX(-1 - groundNumBoxX * boxDim / 2);
-			// wallGroup.translateZ(-1 - groundNumBoxZ * boxDim / 2);
-			// group_scene.add(wallGroup);
+			var wallGroup = new THREE.Group();
+			var pivotWall = new THREE.Object3D();
+			pivotWall.add(cube.clone());
+			// for (y = 0; y < dimMaxY+2; y++) {
+			for (x = 0; x < groundNumBoxX; x++) {
+				for (z = 0; z < 2; z++) {
+					pivotWall.position.z = (boxDim + groundNumBoxZ) * z-1;
+					pivotWall.position.x = boxDim * x;
+					pivotWall.position.y = boxDim * Math.floor(data[x + ((groundNumBoxX) * (groundNumBoxZ-1) * z)]);
+					pivotWall.position.y += 1;
+					wallGroup.add(pivotWall.clone());
+					pivotWall.position.y += 1;
+					wallGroup.add(pivotWall.clone());
+				}
+			}
+			for (z = 0; z < groundNumBoxZ; z++) {
+				for (x = 0; x < 2; x++) {
+					pivotWall.position.x = (boxDim + groundNumBoxX) * x-1;
+					pivotWall.position.z = boxDim * z;
+					pivotWall.position.y = boxDim * Math.floor(data[x * (groundNumBoxX-1) + ((groundNumBoxX) * z)]);
+					pivotWall.position.y += 1;
+					wallGroup.add(pivotWall.clone());
+					pivotWall.position.y += 1;
+					wallGroup.add(pivotWall.clone());
+				}
+			}
+			wallGroup.translateX(Math.floor(- groundNumBoxX * boxDim / 2));
+			wallGroup.translateZ(Math.floor(- groundNumBoxZ * boxDim / 2));
+
+			group_scene.add(wallGroup);
 			return group_scene;
 		}
 
@@ -376,12 +414,194 @@
 
 		}
 
+		//funzione per la crezione di una casa
+		function House(x, y, z) {
+			var geometry = new THREE.BoxGeometry(1, 1, 1);
+			var loader = new THREE.TextureLoader();
+			var materials_wall = new THREE.MeshPhongMaterial({
+				map: loader.load('textures/wall.jpg')
+			});
+
+			var materials_roof = new THREE.MeshPhongMaterial({
+				map: loader.load('textures/moss.jpg')
+			});
+
+			var muro = new THREE.Mesh(geometry, materials_roof);
+			var roof = new THREE.Mesh(geometry, materials_wall);
+			var casa = new THREE.Object3D();
+			var casa_pos = new THREE.Object3D();
+
+			muro.castShadow = true;
+			muro.receiveShadow = true;
+
+			roof.castShadow = true;
+			roof.receiveShadow = true;
+
+			//perimetro altezza1
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.x -= 1;
+			casa.add(muro.clone());
+			muro.position.x -= 1;
+			casa.add(muro.clone());
+			muro.position.x -= 2;
+			muro.position.y += 1;
+
+
+			//perimetro altezza2
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.z += 2;
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.x += 2;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.z -= 2;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.x -= 2;
+			casa.add(muro.clone());
+			muro.position.x -= 2;
+			muro.position.y += 1;
+
+			//perimetro altezza3
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.z += 1;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.z -= 1;
+			casa.add(muro.clone());
+			muro.position.x -= 1;
+			casa.add(muro.clone());
+			muro.position.x -= 1;
+			casa.add(muro.clone());
+			muro.position.x -= 1;
+			casa.add(muro.clone());
+
+			muro.position.y += 1;
+			casa.add(muro.clone());
+			muro.position.z += 4;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.z -= 4;
+			casa.add(muro.clone());
+			muro.position.x += 1;
+			casa.add(muro.clone());
+			muro.position.z += 4;
+			casa.add(muro.clone());
+			muro.position.x -= 1;
+			muro.position.y += 1;
+			casa.add(muro.clone());
+			muro.position.z -= 4;
+			casa.add(muro.clone());
+
+
+			//codice per il tetto, molto brutto esteticamente ma se fatto a punta vengono TROPPI cubi
+
+			roof.position.y += 2;
+			roof.position.x -= 1;
+			roof.position.z -= 1;
+
+			for (var i = 0; i < 3; i++) {
+				for (var j = 0; j < 7; j++) {
+					casa.add(roof.clone());
+					roof.position.y += 1;
+					casa.add(roof.clone());
+					roof.position.y -= 1;
+
+					roof.position.x += 6 - 2 * i;
+					casa.add(roof.clone());
+					roof.position.y += 1;
+					casa.add(roof.clone());
+
+
+					roof.position.x -= 6 - 2 * i;
+					roof.position.y -= 1;
+					roof.position.z += 1;
+				}
+				roof.position.x += 1;
+				roof.position.z -= 7;
+				roof.position.y += 1;
+			}
+			for (var j = 0; j < 7; j++) {
+				casa.add(roof.clone());
+				roof.position.y += 1;
+				casa.add(roof.clone());
+
+				roof.position.y -= 1;
+				roof.position.z += 1;
+			}
+
+
+			casa.position.x += x;
+			casa.position.y += y;
+			casa.position.z += z;
+			//casa.rotation.y += Math.PI;
+			casa_pos.add(casa);
+
+			return casa_pos;
+
+		}
+
+
 
 
 		function controlCollisionWall() {
-			if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
+			if (cameraPivot.position.x > Math.floor(-1 + groundNumBoxX * boxDim / 2) || cameraPivot.position.x < Math.floor(-groundNumBoxX * boxDim / 2))
 				cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
-			if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
+			if (cameraPivot.position.z > Math.floor(-1 + groundNumBoxZ * boxDim / 2) || cameraPivot.position.z < Math.floor(-groundNumBoxZ * boxDim / 2))
 				cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
 
 			var newX = Math.round(groundNumBoxX / 2 + cameraPivot.position.x);
@@ -432,13 +652,18 @@
 			loadedHeighMap = false;
 			var imgLoader = new THREE.ImageLoader();
 			var img = imgLoader.load(// resource URL
-				"textures/heightmap3.png",
+				"textures/heightmap1.png",
 
 				// onLoad callback
 				function (image) {
 					// use the image, e.g. draw part of it on a canvas
 					//get height data from img
-					data = getHeightData(image, 0.1);
+					data = getHeightData(image, 0.08);
+					dimMaxY = data[0];
+					for (var i = 0; i < data.length; i++) {
+						if (data[i] > dimMaxY) dimMaxY = data[i];
+					}
+
 					loadedHeighMap = true;
 
 					groundNumBoxX = img.width;
@@ -534,14 +759,20 @@
 			// scene.add(tronco1);
 
 			//creo un albero tramite l'apposita funzione
-			var albero1 = albero(1, 1, 1);
+			var albero1 = albero(2, 1, -3);
 			scene.add(albero1);
+
+			albero1.visible = false;
+
+			//creo una casa tramite apposita funzione
+			var casa = House(-2, 1, 5);
+			scene.add(casa);
 
 			//questa funzione crea ed aggiunge alla scena il mondo terreno, i bordi
 			scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
 
-
-			hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+			//LIGHTS
+			hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.7);
 			hemiLight.color.setHSL(0.6, 1, 0.6);
 			hemiLight.groundColor.setHSL(0.095, 1, 0.75);
 			hemiLight.position.set(0, 500, 0);
@@ -549,23 +780,36 @@
 
 			dirLight = new THREE.DirectionalLight(0xffffff, 1);
 			dirLight.color.setHSL(0.1, 1, 0.95);
-			dirLight.position.set(-1, 1.75, 1);
+			dirLight.position.set(-1, 4, 1);
 			dirLight.position.multiplyScalar(50);
 			scene.add(dirLight);
 			dirLight.castShadow = true;
-			dirLight.shadow.mapSize.width = 1024;
-			dirLight.shadow.mapSize.height = 1024;
+			dirLight.shadow.mapSize.width = 512;
+			dirLight.shadow.mapSize.height = 512;
 
 
-			// GROUND
-			var groundGeo = new THREE.PlaneBufferGeometry(10000, 10000);
-			var groundMat = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x050505 });
-			groundMat.color.setHSL(0.095, 1, 0.75);
-			var ground = new THREE.Mesh(groundGeo, groundMat);
-			ground.position.y = -0.5;
-			ground.rotation.x = -Math.PI / 2;
-			scene.add(ground);
-			ground.receiveShadow = true;
+			// // GROUND
+			// var groundGeo = new THREE.PlaneBufferGeometry(1000, 1000);
+			// var groundMat = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x050505 });
+			// groundMat.color.setHSL(0.095, 1, 0.75);
+			// var ground = new THREE.Mesh(groundGeo, groundMat);
+			// ground.position.y = -0.5;
+			// ground.rotation.x = -Math.PI / 2;
+			// scene.add(ground);
+			// ground.receiveShadow = false;
+
+			//SKY
+			var skyGeo = new THREE.PlaneBufferGeometry(10000, 10000);
+			var skyMat = new THREE.MeshPhongMaterial({ color: 0x2194ce, specular: 0x000000, emissive: 0x464646 });
+
+			// skyMat.color = new THREE.Color( 'cyan' );
+			// skyMat.color.setRGB(0, 0.6, 0.9);
+			var sky = new THREE.Mesh(skyGeo, skyMat);
+			sky.position.y = 60;
+			sky.rotation.x = Math.PI / 2;
+
+			scene.add(sky);
+			sky.receiveShadow = false;
 
 			//statistiche di FPS
 			stats = new Stats();
@@ -582,7 +826,7 @@
 		// function colliderPG(){
 		// 	var pgX;
 		// 	var pgY;
-			
+
 		// 	var newX = Math.round(groundNumBoxX / 2 + cameraPivot.position.x);
 		// 	var newY = Math.round(groundNumBoxZ / 2 + cameraPivot.position.z);
 
