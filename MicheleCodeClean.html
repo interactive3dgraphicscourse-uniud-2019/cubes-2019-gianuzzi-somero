@@ -269,8 +269,8 @@
 
 			// console.log("dopo il ciclo " + group.children.length);
 			group_scene.add(group);
-			group.translateX(Math.floor(-groundNumBoxX * boxDim / 2));
-			group.translateZ(Math.floor(-groundNumBoxZ * boxDim / 2));
+			group.translateX(Math.round(-groundNumBoxX * boxDim / 2));
+			group.translateZ(Math.round(-groundNumBoxZ * boxDim / 2));
 
 			//i finti muri devono partire dai bordi dell'immagine andranno fatti
 			// //creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
@@ -300,8 +300,8 @@
 					wallGroup.add(pivotWall.clone());
 				}
 			}
-			wallGroup.translateX(Math.floor(- groundNumBoxX * boxDim / 2));
-			wallGroup.translateZ(Math.floor(- groundNumBoxZ * boxDim / 2));
+			wallGroup.translateX(Math.round(- groundNumBoxX * boxDim / 2));
+			wallGroup.translateZ(Math.round(- groundNumBoxZ * boxDim / 2));
 
 			group_scene.add(wallGroup);
 			return group_scene;
@@ -599,13 +599,13 @@
 
 
 		function controlCollisionWall() {
-			if (cameraPivot.position.x > Math.floor(-1 + groundNumBoxX * boxDim / 2) || cameraPivot.position.x < Math.floor(-groundNumBoxX * boxDim / 2))
+			if (cameraPivot.position.x > Math.round(-1 + groundNumBoxX * boxDim / 2) || cameraPivot.position.x < Math.round(-groundNumBoxX * boxDim / 2))
 				cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
-			if (cameraPivot.position.z > Math.floor(-1 + groundNumBoxZ * boxDim / 2) || cameraPivot.position.z < Math.floor(-groundNumBoxZ * boxDim / 2))
+			if (cameraPivot.position.z > Math.round(-1 + groundNumBoxZ * boxDim / 2) || cameraPivot.position.z < Math.round(-groundNumBoxZ * boxDim / 2))
 				cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
 
-			var newX = Math.round(groundNumBoxX / 2 + cameraPivot.position.x);
-			var newY = Math.round(groundNumBoxZ / 2 + cameraPivot.position.z);
+			var newX = Math.floor(groundNumBoxX / 2 + cameraPivot.position.x);
+			var newY = Math.floor(groundNumBoxZ / 2 + cameraPivot.position.z);
 
 			cameraPivot.position.y = altezzaPg + data[newX + (newY * groundNumBoxX)];
 		}
@@ -761,8 +761,6 @@
 			//creo un albero tramite l'apposita funzione
 			var albero1 = albero(2, 1, -3);
 			scene.add(albero1);
-
-			albero1.visible = false;
 
 			//creo una casa tramite apposita funzione
 			var casa = House(-2, 1, 5);
