@@ -199,6 +199,125 @@
 
 		//IMPLEMENTO CODICE GIANUZZI
 		//funzioni per creazione di environment
+		// function creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim) {
+		// 	//leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
+		// 	//per i warning lanciati a console dal metodo del professore flaggato come deprecato
+		// 	var group_scene = new THREE.Object3D();
+		// 	var geometry = new THREE.BoxGeometry(boxDim, boxDim, boxDim);
+		// 	var loader = new THREE.TextureLoader();
+		// 	loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
+		// 	var texture = loader.load('textures/11635.jpg');
+		// 	var materials = [
+		// 		new THREE.MeshPhongMaterial({
+		// 			map: loader.load('textures/11635.jpg')
+		// 		}),
+		// 		new THREE.MeshPhongMaterial({
+		// 			map: loader.load('textures/11635.jpg')
+		// 		}),
+		// 		new THREE.MeshPhongMaterial({
+		// 			map: loader.load('textures/prova.jpg')
+		// 		}),
+		// 		new THREE.MeshPhongMaterial({
+		// 			map: loader.load('textures/11635.jpg')
+		// 		}),
+		// 		new THREE.MeshPhongMaterial({
+		// 			map: loader.load('textures/11635.jpg')
+		// 		}),
+		// 		new THREE.MeshPhongMaterial({
+		// 			map: loader.load('textures/11635.jpg')
+		// 		})
+		// 	];
+		// 	var cube = new THREE.Mesh(geometry, materials);
+		// 	cube.castShadow = true;
+		// 	cube.receiveShadow = true;
+
+		// 	//Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
+		// 	//clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
+		// 	var pivot = new THREE.Object3D();
+		// 	var group = new THREE.Group();
+
+		// 	//scene.add( cube );
+		// 	pivot.add(cube);
+
+		// 	for (z = 0; z < groundNumBoxZ; z++) {
+		// 		for (x = 0; x < groundNumBoxX; x++) {
+		// 			pivot.position.z = boxDim * z;
+		// 			pivot.position.x = boxDim * x;
+		// 			// pivot.position.y = boxDim * Math.floor(data[x + (groundNumBoxX * z)]);
+		// 			// group.add(pivot.clone());
+		// 			var posizioneY = boxDim * Math.floor(data[x + (groundNumBoxX * z)]);
+		// 			for (y = 0; y < posizioneY + boxDim; y += boxDim) {
+		// 				pivot.position.y = y;
+		// 				group.add(pivot.clone());
+		// 			}
+		// 		}
+		// 	}
+		// 	// var ogg1 = 0;
+		// 	// console.log("prima del ciclo" + group.children.length);
+		// 	// do {
+		// 	// 	// for (var ogg1 = 0; ogg1 < group.children.length; ogg1++) {
+
+		// 	// 	var count = 0;
+		// 	// 	var ogg2 = 0;
+		// 	// 	do {
+		// 	// 		// for (var ogg2 = 0; ogg2 < group.children.length; ogg2++) {
+		// 	// 		if (group.children[ogg1].y == group.children[ogg2].y) {
+		// 	// 			if ((group.children[ogg1].x < group.children[ogg2].x + boxDim && group.children[ogg1].x > group.children[ogg2].x + boxDim ) ||
+		// 	// 				group.children[ogg1].x == group.children[ogg2].x - boxDim ||
+		// 	// 				group.children[ogg1].z == group.children[ogg2].z - boxDim ||
+		// 	// 				group.children[ogg1].z == group.children[ogg2].z - boxDim) {
+		// 	// 				count++;
+		// 	// 			}
+		// 	// 			if (count > 3) group.remove(group.children[ogg1]);
+		// 	// 		}
+		// 	// 		ogg2++
+		// 	// 	} while (ogg2 < group.children.length);
+		// 	// 	ogg1++;
+		// 	// 	console.log("durante il ciclo " + group.children.length);
+		// 	// } while (ogg1 < group.children.length);
+
+
+		// 	// console.log("dopo il ciclo " + group.children.length);
+		// 	group_scene.add(group);
+		// 	group.translateX(Math.round(-groundNumBoxX * boxDim / 2));
+		// 	group.translateZ(Math.round(-groundNumBoxZ * boxDim / 2));
+
+		// 	//i finti muri devono partire dai bordi dell'immagine andranno fatti
+		// 	// //creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
+		// 	var wallGroup = new THREE.Group();
+		// 	var pivotWall = new THREE.Object3D();
+		// 	pivotWall.add(cube.clone());
+		// 	// for (y = 0; y < dimMaxY+2; y++) {
+		// 	for (x = 0; x < groundNumBoxX; x++) {
+		// 		for (z = 0; z < 2; z++) {
+		// 			pivotWall.position.z = (boxDim + groundNumBoxZ) * z - 1;
+		// 			pivotWall.position.x = boxDim * x;
+		// 			pivotWall.position.y = boxDim * Math.floor(data[x + ((groundNumBoxX) * (groundNumBoxZ - 1) * z)]);
+		// 			pivotWall.position.y += 1;
+		// 			wallGroup.add(pivotWall.clone());
+		// 			pivotWall.position.y += 1;
+		// 			wallGroup.add(pivotWall.clone());
+		// 		}
+		// 	}
+		// 	for (z = 0; z < groundNumBoxZ; z++) {
+		// 		for (x = 0; x < 2; x++) {
+		// 			pivotWall.position.x = (boxDim + groundNumBoxX) * x - 1;
+		// 			pivotWall.position.z = boxDim * z;
+		// 			pivotWall.position.y = boxDim * Math.floor(data[x * (groundNumBoxX - 1) + ((groundNumBoxX) * z)]);
+		// 			pivotWall.position.y += 1;
+		// 			wallGroup.add(pivotWall.clone());
+		// 			pivotWall.position.y += 1;
+		// 			wallGroup.add(pivotWall.clone());
+		// 		}
+		// 	}
+		// 	wallGroup.translateX(Math.round(- groundNumBoxX * boxDim / 2));
+		// 	wallGroup.translateZ(Math.round(- groundNumBoxZ * boxDim / 2));
+
+		// 	group_scene.add(wallGroup);
+		// 	return group_scene;
+		// }
+
+		//PURA MAGIA!
 		function creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim) {
 			//leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
 			//per i warning lanciati a console dal metodo del professore flaggato come deprecato
@@ -239,49 +358,56 @@
 			//scene.add( cube );
 			pivot.add(cube);
 
-			for (z = 0; z < groundNumBoxZ; z++) {
-				for (x = 0; x < groundNumBoxX; x++) {
-					pivot.position.z = boxDim * z;
-					pivot.position.x = boxDim * x;
-					// pivot.position.y = boxDim * Math.floor(data[x + (groundNumBoxX * z)]);
-					// group.add(pivot.clone());
-					var posizioneY = boxDim * Math.floor(data[x + (groundNumBoxX * z)]);
-					for (y = 0; y < posizioneY + boxDim; y += boxDim) {
-						pivot.position.y = y;
-						group.add(pivot.clone());
+
+			for (i = 0; i < groundNumBoxX; i++) {
+				for (j = 0; j < groundNumBoxZ; j++) {
+					pivot.position.z = boxDim * i;
+					pivot.position.x = boxDim * j;
+					pivot.position.y = boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]));
+					group.add(pivot.clone());
+
+					// console.log(data[(i * groundNumBoxZ) + j]);
+					//Codice per stampare quadrati di rempimento
+
+					var dist1 = 0;
+					var dist2 = 0;
+					var dist3 = 0;
+					var dist4 = 0;
+
+
+					if (j > 0) {
+						dist1 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i * groundNumBoxZ) + j - 1]);
 					}
+					if (j < groundNumBoxZ) {
+						dist2 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i * groundNumBoxZ) + j + 1]);
+					}
+					if (i > 0) {
+						dist3 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[((i - 1) * groundNumBoxZ) + j]);
+					}
+					if (i < groundNumBoxX) {
+						dist4 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[((i + 1) * groundNumBoxZ) + j]);
+					}
+
+					var sottocubi = Math.max(dist1, dist2, dist3, dist4);
+					if (sottocubi > 1) {
+						console.log(sottocubi);
+						for (k = 0; k < sottocubi; k++) {
+							console.log("k" + k);
+							pivot.position.y -= 1;
+							group.add(pivot.clone());
+						}
+
+					}
+
 				}
 			}
-			// var ogg1 = 0;
-			// console.log("prima del ciclo" + group.children.length);
-			// do {
-			// 	// for (var ogg1 = 0; ogg1 < group.children.length; ogg1++) {
 
-			// 	var count = 0;
-			// 	var ogg2 = 0;
-			// 	do {
-			// 		// for (var ogg2 = 0; ogg2 < group.children.length; ogg2++) {
-			// 		if (group.children[ogg1].y == group.children[ogg2].y) {
-			// 			if ((group.children[ogg1].x < group.children[ogg2].x + boxDim && group.children[ogg1].x > group.children[ogg2].x + boxDim ) ||
-			// 				group.children[ogg1].x == group.children[ogg2].x - boxDim ||
-			// 				group.children[ogg1].z == group.children[ogg2].z - boxDim ||
-			// 				group.children[ogg1].z == group.children[ogg2].z - boxDim) {
-			// 				count++;
-			// 			}
-			// 			if (count > 3) group.remove(group.children[ogg1]);
-			// 		}
-			// 		ogg2++
-			// 	} while (ogg2 < group.children.length);
-			// 	ogg1++;
-			// 	console.log("durante il ciclo " + group.children.length);
-			// } while (ogg1 < group.children.length);
-
-
-			// console.log("dopo il ciclo " + group.children.length);
+			console.log(group);
 			group_scene.add(group);
 			group.translateX(Math.round(-groundNumBoxX * boxDim / 2));
 			group.translateZ(Math.round(-groundNumBoxZ * boxDim / 2));
 
+			//inserisco i muri
 			//i finti muri devono partire dai bordi dell'immagine andranno fatti
 			// //creo dei finti muri esterni al mondo per far credere che ci si sbatta contro:
 			var wallGroup = new THREE.Group();
@@ -314,6 +440,7 @@
 			wallGroup.translateZ(Math.round(- groundNumBoxZ * boxDim / 2));
 
 			group_scene.add(wallGroup);
+
 			return group_scene;
 		}
 
@@ -832,7 +959,7 @@
 			deltaTime = timeStart;
 			time = deltaTime;
 			fallingY = 100;
-			camera.rotateX(Math.PI/2);
+			camera.rotateX(-Math.PI / 2 + 0.1);
 
 		}
 
@@ -873,24 +1000,15 @@
 					if (fallingY > 2) {
 						fallingY -= acceleration * (Date.now() - timeStart);
 						console.log(fallingY);
-						camera.rotateX(newTime/100);
+						// camera.rotateX(newTime / 100);
 						cameraPivot.position.set(0, fallingY, 0);
-						time = 6000;
+						// time = 6000;
 					}
 					else {
 						cameraPivot.position.set(0, 2, 0);
-						time-=newTime;
-						if (time>5000){
-							time = Date.now()-timeStart;
-							camera.focus = 100;
-						}
-						else if (time>3000 && time <=5000){
-							// camera.focus = 100;
-							camera.rotation.set(0,0,0);
-						}
-						else
+						// camera.rotation.set(0, 0, 0);
 						endedIn = true;
-						
+
 					}
 
 

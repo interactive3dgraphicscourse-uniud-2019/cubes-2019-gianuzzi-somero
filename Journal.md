@@ -3,6 +3,8 @@
 ##Aim
 lo scopo è creare una scena visitabile in terza persona tramite tastiera e mouse
 
+FILE PRINCIPALE: MineProject.html
+
 ##Creazione scena
 la scena è stata inizialmente creata piatta per capire come creare gruppi di cubi in posizioni ricorsive x,x1,x2,x3... z,z1,z2,z3...
 siamo passati poi alla creazione di oggetti fisici quali alberi/case
@@ -26,5 +28,8 @@ Presa confidenza con i tronchi abbiamo deciso di implementare qualcosa di più c
 
 Nella crezione degli oggetti ci siamo resi conto che la rotazione va ad intaccare le ombre degli oggetti quindi va evitata il più possibile
 
+E' stato inoltre creato il cielo come SkyBox e  sono generate e mosse delle nuvole utilizzando delle funzioni randomiche. sono max sei e si muovono a data velocità anche grazie alla gestione del tempo e non dei frame
+
 ##HighMapping
 durante l'implementazione dell'highmap, che è avvenuta tramite l'utilizzo dell'array generato dalla scala di grigi dell'immagine (per ogni valore di colore rimappato una y di un cubo), ci siamo inbattuti nel problema di generare i cubi riempitivi sotto il livello di Y, generando tutti i cubi il programma tende a rallentare parecchio di FPS
+Siamo riusciti a correggere l'errore ed ora vengono disegnati solo i cubi necessari
