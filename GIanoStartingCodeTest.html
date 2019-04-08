@@ -1,0 +1,734 @@
+<html>
+
+<head>
+    <title>Starting Code for 1st Project 2017 - with lights and textures</title>
+    <style>
+        body {
+            font-family: Monospace;
+            background-color: #f0f0f0;
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script src="lib/three.min.js"></script>
+    <script src="lib/stats.min.js"></script>
+    <script src="lib/Coordinates.js"></script>
+    <script src="lib/OrbitControls.js"></script>
+</head>
+
+<body>
+
+    <script>
+
+        var scene, camera, renderer, controls, stats;
+
+        //VARIABILI PER GESTIONE DI CUBI
+        var groundNumBoxX = 50;
+        var groundNumBoxZ = 50;
+        var boxDim = 1;
+
+        //posizione del mouse in game
+        var positionMouse;
+
+        //camera Pivot
+        var cameraPivot;
+
+        //velocità di movimento della telecamera in X e Y
+        var cameraSpeed = 0.2;
+        var cameraSpeedX, cameraSpeedZ;
+        var altezzaPg = 2;
+
+        //controllo se sto premendo il mouse
+        var enteredmouse;
+        var mouseRotationSpeed = 0.03;
+
+        //Funzione per HeighMap
+        var data;
+        var imgX;
+        var imgY;
+        var loadedData;
+
+        //FUNZIONE che permette di ruotare la camera grazie ad un pivot per la componente Y
+        // (così da permettere lo spostamento lungo x e z ruotati)
+        //e di ruotare la camera lungo l'asse X così da non andare in alto e in basso 
+        // (se ruotassi il pivot, allo spostamento del pivot potrei muovermi lungo la sua asse z
+        //  che sarebbe ruotata e andrei a spostarmi lungo un asse con componente Y globale
+        //  mentre ho bisogno che la camera non si muova lungo l'asse Y globale)
+        function cameraRotate(evt) {
+            var distX = evt.screenX - positionMouse.x;
+            var distY = evt.screenY - positionMouse.y;
+
+            if (enteredmouse) {
+                if (distX > 1 || distX < -1)
+                    cameraPivot.rotateY(-mouseRotationSpeed * distX / Math.abs(distX));
+                if (distY > 1 || distY < -1)
+                    if (camera.rotation.x > -(Math.PI / 2) && camera.rotation.x < (Math.PI / 2))	//controllo per la rotazione della camera con blocchi a 90° in basso e in alto in modo da non poter dare il giro
+                        camera.rotateX(-mouseRotationSpeed * distY / Math.abs(distY));
+                    else camera.rotation.x = (-camera.rotation.x / Math.abs(camera.rotation.x)) * mouseRotationSpeed + camera.rotation.x;	//controllo per non rimanere bloccati nella situazione dell'if
+            }
+            distX = 0;
+            distY = 0;
+            positionMouse.x = evt.screenX;
+            positionMouse.y = evt.screenY;
+        }
+
+
+        // FUNZIONE EVENTO PER MOVIMENTO DELLA CAMERA
+        // funzione moviemnto gestita con WASD o FRECCE DIREZIONALI,
+        // per usufruire di questo tipo di movimento disattivo i movimenti che consente di fare l'OrbitControl
+        // in più controllo che si possa gestire la rotazione della camera rispetto al centro della camera stessa con il mouse grazie alla OrbitControls
+
+        function pressedDirection(evt) {
+            // console.log("pressedSomething");
+            switch (evt.keyCode) {
+                case 37: case 65:				//37 = sx   65 = a
+                    // console.log("you pressed:  " + evt.key);
+                    cameraSpeedX = -cameraSpeed;
+                    // cameraMove("sx");
+                    break;
+                case 38: case 87:				//38 = up   87 = w
+                    // console.log("you pressed:  " + evt.key);
+                    cameraSpeedZ = -cameraSpeed;
+                    // cameraMove("up");
+                    break;
+                case 39: case 68:				//38 = dx   68 = d
+                    // console.log("you pressed:  " + evt.key);
+                    cameraSpeedX = cameraSpeed;
+                    // cameraMove("dx");
+                    break;
+                case 40: case 83:				//40 = dw   83 = s
+                    // console.log("you pressed:  " + evt.key);
+                    cameraSpeedZ = cameraSpeed;
+                    // cameraMove("dw");
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        function releasedDirection(evt) {
+            // console.log("pressedSomething");
+            switch (evt.keyCode) {
+                case 37: case 65:				//37 = sx   65 = a
+                    // console.log("you released:  " + evt.key);
+                    cameraSpeedX = 0;
+                    // cameraMove("sx");
+                    break;
+                case 38: case 87:				//38 = up   87 = w
+                    // console.log("you released:  " + evt.key);
+                    cameraSpeedZ = 0;
+                    // cameraMove("up");
+                    break;
+                case 39: case 68:				//38 = dx   68 = d
+                    // console.log("you released:  " + evt.key);
+                    cameraSpeedX = 0;
+                    // cameraMove("dx");
+                    break;
+                case 40: case 83:				//40 = dw   83 = s
+                    // console.log("you released:  " + evt.key);
+                    cameraSpeedZ = 0;
+                    // cameraMove("dw");
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        function createCamera() {
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            //posizione del mouse iniziale la pongo a (0,0,0)
+            positionMouse = new THREE.Vector3(0, 0, 0);
+
+            //assegno alla variabile cameraPivot un object3D in modo da gestirlo come oggetto padre della camera
+            cameraPivot = new THREE.Object3D();
+            cameraPivot.position.set(0, 2, 0);
+            cameraPivot.add(camera);
+            scene.add(cameraPivot);
+
+            //velocità della camera è 0 quando la camera è ferma, mentre è cameraSpeed se la camera muove, in questo momento è 0 perchè all'inizio è ferma
+            cameraSpeedX = 0;
+            cameraSpeedZ = 0;
+            //di default il mouse non è premuto
+            enteredmouse = false;
+
+            //aggiungo un event listener alla finestra
+            document.addEventListener("keydown", pressedDirection, true);
+            document.addEventListener("keyup", releasedDirection, true);
+            window.addEventListener("mousedown", function changeCondition() { enteredmouse = true; }, true);
+            window.addEventListener("mouseup", function changeCondition() { enteredmouse = false; }, true);
+            window.addEventListener("mousemove", cameraRotate, true);
+        }
+
+        function controlCameraMovement() {
+            //controlla se la camera si sta muovendo in quel momento
+            if (cameraSpeedX != 0 || cameraSpeedZ != 0) {
+                cameraPivot.translateX(cameraSpeedX);
+                cameraPivot.translateZ(cameraSpeedZ);
+            }
+        }
+
+        function creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim) {
+            //leggera modifica, impiego un TextureLoader per caricare la texture sclusivamente
+            //per i warning lanciati a console dal metodo del professore flaggato come deprecato
+            var group_scene = new THREE.Object3D();
+            var geometry = new THREE.BoxGeometry(boxDim, boxDim, boxDim);
+            var loader = new THREE.TextureLoader();
+            loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
+            var texture = loader.load('textures/11635.jpg');
+            var materials = [
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/prova.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/11635.jpg')
+                })
+            ];
+            var cube = new THREE.Mesh(geometry, materials);
+            cube.castShadow = true;
+            cube.receiveShadow = true;
+
+            //Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
+            //clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
+            var pivot = new THREE.Object3D();
+            var group = new THREE.Group();
+
+            //scene.add( cube );
+            pivot.add(cube);
+
+
+            for (i = 0; i < groundNumBoxX; i++) {
+                for (j = 0; j < groundNumBoxZ; j++) {
+                    pivot.position.z = boxDim * i;
+                    pivot.position.x = boxDim * j;
+                    pivot.position.y = boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]));
+                    group.add(pivot.clone());
+
+                    // console.log(data[(i * groundNumBoxZ) + j]);
+                    //Codice per stampare quadrati di rempimento
+
+                    var dist1 = 0;
+                    var dist2 = 0;
+                    var dist3 = 0;
+                    var dist4 = 0;
+
+
+                    if (j > 0) {
+                        dist1 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i * groundNumBoxZ) + j - 1]);
+                    }
+                    if (j < groundNumBoxZ) {
+                        dist2 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[(i * groundNumBoxZ) + j + 1]);
+                    }
+                    if (i > 0) {
+                        dist3 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[((i - 1) * groundNumBoxZ) + j]);
+                    }
+                    if (i < groundNumBoxX) {
+                        dist4 = Math.floor(data[(i * groundNumBoxZ) + j]) - Math.floor(data[((i + 1) * groundNumBoxZ) + j]);
+                    }
+
+                    var sottocubi = Math.max(dist1, dist2, dist3, dist4);
+                    if (sottocubi > 1) {
+                        console.log(sottocubi);
+                        for (k = 0; k < sottocubi; k++) {
+                            console.log("k" + k);
+                            pivot.position.y -= 1;
+                            group.add(pivot.clone());
+                        }
+
+                    }
+
+                }
+            }
+
+            console.log(group);
+            group_scene.add(group);
+            group.translateX(-groundNumBoxX * boxDim / 2);
+            group.translateZ(-groundNumBoxZ * boxDim / 2);
+
+            return group_scene;
+        }
+
+        function albero(x, y, z) {
+            var geo = new THREE.BoxGeometry(1, 1, 1);
+            var loaderAl = new THREE.TextureLoader();
+            var albero_pos = new THREE.Object3D();
+            var textureLegno = new THREE.MeshPhongMaterial({ map: loaderAl.load('textures/wood.jpg') });
+            var albero = new THREE.Group();
+            var legno = new THREE.Mesh(geo, textureLegno);
+            var textureFoglie = new THREE.MeshPhongMaterial({ map: loaderAl.load('textures/leaves.jpg') });
+            var foglie = new THREE.Mesh(geo, textureFoglie);
+
+            //OMBRE
+            legno.castShadow = true;
+            legno.receiveShadow = true;
+
+            foglie.castShadow = true;
+            foglie.receiveShadow = true;
+
+            //tronco
+            albero.add(legno.clone());
+            legno.position.y += 1;
+            albero.add(legno.clone());
+            legno.position.y += 1;
+            albero.add(legno.clone());
+            legno.position.y += 1;
+
+            //foglie
+            foglie.position.y += 3;
+            albero.add(foglie.clone());
+            foglie.position.z += 1;
+            albero.add(foglie.clone());
+            foglie.position.x += 1;
+            albero.add(foglie.clone());
+            foglie.position.z -= 1;
+            albero.add(foglie.clone());
+            foglie.position.z -= 1;
+            albero.add(foglie.clone());
+            foglie.position.x -= 1;
+            albero.add(foglie.clone());
+            foglie.position.x -= 1;
+            albero.add(foglie.clone());
+            foglie.position.z += 1;
+            albero.add(foglie.clone());
+            foglie.position.z += 1;
+            albero.add(foglie.clone());
+            foglie.position.x += 1;
+            foglie.position.y += 1;
+            albero.add(foglie.clone());
+            foglie.position.x += 1;
+            foglie.position.z -= 1;
+            albero.add(foglie.clone());
+            foglie.position.x -= 1;
+            foglie.position.z -= 1;
+            albero.add(foglie.clone());
+            foglie.position.x -= 1;
+            foglie.position.z += 1;
+            albero.add(foglie.clone());
+            foglie.position.x += 1;
+            foglie.position.y += 1;
+            albero.add(foglie.clone());
+            albero.position.x += x;
+            albero.position.y += y;
+            albero.position.z += z;
+
+            albero_pos.add(albero);
+
+            return albero_pos;
+
+        }
+
+        function tronco(x, y, z) {
+            var geometry = new THREE.BoxGeometry(1, 1, 1);
+            var loader = new THREE.TextureLoader();
+            var materials = [
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/cutted_wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/wood.jpg')
+                }),
+                new THREE.MeshPhongMaterial({
+                    map: loader.load('textures/wood.jpg')
+                })
+            ];
+
+            var tronco = new THREE.Mesh(geometry, materials);
+            var tronco_pos = new THREE.Object3D();
+            tronco.castShadow = true;
+            tronco.receiveShadow = true;
+
+            tronco.position.x += x;
+            tronco.position.y += y;
+            tronco.position.z += z;
+            tronco_pos.add(tronco);
+
+            return tronco_pos;
+
+        }
+
+        function House(x, y, z) {
+            var geometry = new THREE.BoxGeometry(1, 1, 1);
+            var loader = new THREE.TextureLoader();
+            var materials_wall = new THREE.MeshPhongMaterial({
+                map: loader.load('textures/wall.jpg')
+            });
+
+            var materials_roof = new THREE.MeshPhongMaterial({
+                map: loader.load('textures/moss.jpg')
+            });
+
+            var muro = new THREE.Mesh(geometry, materials_roof);
+            var roof = new THREE.Mesh(geometry, materials_wall);
+            var casa = new THREE.Object3D();
+            var casa_pos = new THREE.Object3D();
+
+            muro.castShadow = true;
+            muro.receiveShadow = true;
+
+            roof.castShadow = true;
+            roof.receiveShadow = true;
+
+            //perimetro altezza1
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 2;
+            muro.position.y += 1;
+
+
+            //perimetro altezza2
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 2;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 2;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 2;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 2;
+            casa.add(muro.clone());
+            muro.position.x -= 2;
+            muro.position.y += 1;
+
+            //perimetro altezza3
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.z += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.z -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            casa.add(muro.clone());
+
+            muro.position.y += 1;
+            casa.add(muro.clone());
+            muro.position.z += 4;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 4;
+            casa.add(muro.clone());
+            muro.position.x += 1;
+            casa.add(muro.clone());
+            muro.position.z += 4;
+            casa.add(muro.clone());
+            muro.position.x -= 1;
+            muro.position.y += 1;
+            casa.add(muro.clone());
+            muro.position.z -= 4;
+            casa.add(muro.clone());
+
+
+            //codice per il tetto, molto brutto esteticamente ma se fatto a punta vengono TROPPI cubi
+
+            roof.position.y += 2;
+            roof.position.x -= 1;
+            roof.position.z -= 1;
+
+            for (var i = 0; i < 3; i++) {
+                for (var j = 0; j < 7; j++) {
+                    casa.add(roof.clone());
+                    roof.position.y += 1;
+                    casa.add(roof.clone());
+                    roof.position.y -= 1;
+
+                    roof.position.x += 6 - 2 * i;
+                    casa.add(roof.clone());
+                    roof.position.y += 1;
+                    casa.add(roof.clone());
+
+
+                    roof.position.x -= 6 - 2 * i;
+                    roof.position.y -= 1;
+                    roof.position.z += 1;
+                }
+                roof.position.x += 1;
+                roof.position.z -= 7;
+                roof.position.y += 1;
+            }
+            for (var j = 0; j < 7; j++) {
+                casa.add(roof.clone());
+                roof.position.y += 1;
+                casa.add(roof.clone());
+
+                roof.position.y -= 1;
+                roof.position.z += 1;
+            }
+
+
+            casa.position.x += x;
+            casa.position.y += y;
+            casa.position.z += z;
+            //casa.rotation.y += Math.PI;
+            casa_pos.add(casa);
+
+            return casa_pos;
+
+        }
+
+        function controlCollisionWall() {
+            if (cameraPivot.position.x > -1 + groundNumBoxX * boxDim / 2 || cameraPivot.position.x < -groundNumBoxX * boxDim / 2)
+                cameraPivot.position.x = (-cameraPivot.position.x / Math.abs(cameraPivot.position.x)) * cameraSpeed + cameraPivot.position.x;
+            if (cameraPivot.position.z > -1 + groundNumBoxZ * boxDim / 2 || cameraPivot.position.z < -groundNumBoxZ * boxDim / 2)
+                cameraPivot.position.z = (-cameraPivot.position.z / Math.abs(cameraPivot.position.z)) * cameraSpeed + cameraPivot.position.z;
+
+            var newX = Math.round(groundNumBoxX / 2 + cameraPivot.position.x);
+            var newY = Math.round(groundNumBoxZ / 2 + cameraPivot.position.z);
+
+            // cameraPivot.position.y = altezzaPg + data[newX + (newY * groundNumBoxZ)];
+
+
+            // x = dimX/2 + x
+            // y = dimY/2 + y
+            //(x,y) - (dimX/2,dimY/2)
+        }
+
+        //return array with height data from img, taken from: http://danni-three.blogspot.it/2013/09/threejs-heightmaps.html
+        function getHeightData(img, scale) {
+
+            if (scale == undefined) scale = 1;
+
+            var canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            var context = canvas.getContext('2d');
+
+            var size = img.width * img.height;
+            console.log(size);
+            var data = new Float32Array(size);
+
+            context.drawImage(img, 0, 0);
+
+            for (var i = 0; i < size; i++) {
+                data[i] = 0
+            }
+
+            var imgd = context.getImageData(0, 0, img.width, img.height);
+            var pix = imgd.data;
+
+            var j = 0;
+            for (var i = 0; i < pix.length; i += 4) {
+                var all = pix[i] + pix[i + 1] + pix[i + 2];  // all is in range 0 - 255*3
+                data[j++] = scale * all / 3;
+            }
+
+            return data;
+        }
+
+
+        function Loader() {
+            // uncomment if you need to draw coordinate axes when building the scene
+            // Coordinates.drawAllAxes();
+            loadedData = false;
+            var imgLoader = new THREE.ImageLoader();
+            var img = imgLoader.load(// resource URL
+                "textures/heightmap3.png",
+
+                // onLoad callback
+                function (image) {
+                    // use the image, e.g. draw part of it on a canvas
+                    //get height data from img
+                    data = getHeightData(image, 0.05);
+                    Start();
+                    console.log(data);
+                    loadedData = true;
+                    console.log(loadedData);
+                },
+
+                // onProgress callback currently not supported
+                undefined,
+
+                // onError callback
+                function () {
+                    console.error('An error happened.');
+                }
+            );
+
+            console.log(img);
+        }
+
+        function Start() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0xf0f0f0);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.gammaInput = true;
+            renderer.gammaOutput = true;
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            createCamera();
+
+
+            var tronco1 = tronco(-2, 1, -2);
+            scene.add(tronco1);
+            var alberox = -4;
+            var alberoz = 0;
+
+            var trasp_alberox = alberox + groundNumBoxX / 2;
+            var trasp_alberoz = groundNumBoxX / 2 - alberoz;
+            var alberoY = boxDim * Math.floor(data[trasp_alberox + (groundNumBoxX * trasp_alberoz)]);
+            console.log(alberoY);
+            var albero1 = albero(alberox,1, alberoz);
+            scene.add(albero1);
+
+            var casa = House(2, 1, -8);
+            scene.add(casa);
+
+            scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
+
+            hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+            hemiLight.color.setHSL(0.6, 1, 0.6);
+            hemiLight.groundColor.setHSL(0.095, 1, 0.75);
+            hemiLight.position.set(0, 500, 0);
+            scene.add(hemiLight);
+
+            dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            dirLight.color.setHSL(0.1, 1, 0.95);
+            dirLight.position.set(-1, 1.75, 1);
+            dirLight.position.multiplyScalar(50);
+            scene.add(dirLight);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 1024;
+            dirLight.shadow.mapSize.height = 1024;
+
+
+            // GROUND
+            var groundGeo = new THREE.PlaneBufferGeometry(10000, 10000);
+            var groundMat = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x050505 });
+            groundMat.color.setHSL(0.095, 1, 0.75);
+            var ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.position.y = -0.5;
+            ground.rotation.x = -Math.PI / 2;
+            scene.add(ground);
+            ground.receiveShadow = true;
+
+            stats = new Stats();
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.top = '0px';
+            document.body.appendChild(stats.domElement);
+
+            // uncomment if you need to draw coordinate axes when building the scene
+            //Coordinates.drawAllAxes();
+
+            //controls.addEventListener('change', Render);
+            //document.addEventListener('keypress', logKey);
+
+        }
+
+        function Update() {
+            requestAnimationFrame(Update);
+
+            if (loadedData) {
+                //controls.update();
+
+                stats.update();
+
+                controlCameraMovement();
+                controlCollisionWall();
+                Render();
+            }
+        }
+
+        function Render() {
+
+            renderer.render(scene, camera);
+        }
+
+        Loader();
+        Update();
+
+    </script>
+</body>
+
+</html>
