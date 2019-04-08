@@ -73,6 +73,8 @@
 
         var loadedData;
 
+        var Gui = [];
+
 
         //variabile per la gestione dell'altezza
         var dimMaxY;
@@ -739,7 +741,8 @@
                     image.style.left = "50%";
                     image.style.opacity = "0.9";
 
-                    document.body.appendChild(image);
+                    Gui.push(image);
+                    // document.body.appendChild(image);
                     // var canvas = document.getElementsByTagName('canvas');
                     // var context = canvas.getContext('2d');
                     // context.drawImage(image, 100, 100);
@@ -769,7 +772,8 @@
                     image.style.left = "0";
                     image.style.opacity = "0.9";
 
-                    document.body.appendChild(image);
+                    Gui.push(image);
+                    // document.body.appendChild(image);
                     // var canvas = document.getElementsByTagName('canvas');
                     // var context = canvas.getContext('2d');
                     // context.drawImage(image, 100, 100);
@@ -894,7 +898,7 @@
 
         function muoviNuvole(deltaT) {
             for (var i = 0; i < numNuvole; i++) {
-                nuvoleCielo.children[i].position.x += (speedNuvole* deltaT/1000);      //la velocità va in px/s e non al ms in questo modo
+                nuvoleCielo.children[i].position.x += (speedNuvole * deltaT / 1000);      //la velocità va in px/s e non al ms in questo modo
                 if (nuvoleCielo.children[i].position.x > groundNumBoxX / 2 + 10) {     //voglio essere certo che esca dallo skybox che ho creato
                     nuvoleCielo.children[i].position.x = -(groundNumBoxX / 2 + 10);
                     nuvoleCielo.children[i].position.z = Math.random() * (groundNumBoxZ / 2 - (-groundNumBoxZ / 2)) + (-groundNumBoxZ / 2);
@@ -954,6 +958,9 @@
                     }
                     else {
                         cameraPivot.position.set(0, 2, 0);
+                        for (var i = 0; i < Gui.length; i++) {
+                            document.body.appendChild(Gui[i]);
+                        }
                         endedIn = true;
 
                     }
