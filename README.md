@@ -129,7 +129,7 @@ per fare ciò i file utilizzati sono:
 - three.min.js (libreria three.js che è stata aggiornata alla versione più recente)
 - stats.min.js (libreria usata per tenere sotto controllo le prestazioni dell'applicazione)
 - Coordinates.js (non realmente utilizzata, ma all'interno del codice vi sono due righe commentate che possono introdurre se decommentate gli assi in 0,0,0)
-- texture e immagini all'interno della cartella textures
+- texture e immagini all'interno della cartella textures (a cura di Giannuzzi)
 
 ###Result
 Il risultato è la possibilità di muoversi in un mondo creato da un immagine scala di grigi per gestire le pendenze, il frameRate non è sempre il massimo possibile dall'applicazione, ma il motivo è il grande numero di cubi generati tutti modularmente (modulo 1), nonostante non vengano generati cubi in eccesso rispetto a quelli che andranno visti tramite la telecamera e il cielo sia stato creato in un materiale base con dei plane e non cubi.
