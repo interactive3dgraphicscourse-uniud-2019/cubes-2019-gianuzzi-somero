@@ -120,28 +120,40 @@ Sometimes, some feature of the Javascript language can be tricky: [a growing lis
 
 ###Overall
 Il progetto ha lo scopo di eseguire una scena limitata, generata grazie all'utilizzo di una highMap PNG, nella quale l'utente, grazie a mouse e tastiera, può spostarsi in ogni punto.
-La scena è volutamente arricchita da una casa e un albero, inoltre sono presenti uno skybox e delle nuvole randomiche in movimento
+La scena è generata in modo pseudoCasuale:
+La scena è volutamente arricchita da una casa posizionata in una predeterminata posizione e diversi alberi, che vengono posizionati in maniera randomica all'interno della scena, inoltre sono presenti uno skybox e delle nuvole randomiche in movimento. E' stata poi aggiunta successivamente l'acqua nei piani più bassi generati dalla highMap.
+
 per fare ciò i file utilizzati sono:
-- MineProject.html (dopo alcuni tentativi e prove in file diversi si è deciso di riunire tutto il codice all'interno di questo file)
+- MineProject.html (dopo alcuni tentativi e prove in file diversi si è deciso di riunire tutto il codice all'interno di questo file, tranne gli script per la creazione di oggetti)
+- creation.js (script in cui sono state riunite tutte le funzioni per la creazione di oggetti nella scena)
 - three.min.js (libreria three.js che è stata aggiornata alla versione più recente)
 - stats.min.js (libreria usata per tenere sotto controllo le prestazioni dell'applicazione)
 - Coordinates.js (non realmente utilizzata, ma all'interno del codice vi sono due righe commentate che possono introdurre se decommentate gli assi in 0,0,0)
 - texture e immagini all'interno della cartella textures
 
 ###Result
-Il risultato è la possibilità di muoversi in un mondo creato da un immagine scala di grigi per gestire le pendenze, il frameRate non è sempre al massimo, ma il motivo è il grande numero di cubi generati, nonostante non vengano generati cubi in eccesso rispetto a quelli che andranno visti tramite la telecamera e il cielo sia stato creato in un materiale base:
+Il risultato è la possibilità di muoversi in un mondo creato da un immagine scala di grigi per gestire le pendenze, il frameRate non è sempre il massimo possibile dall'applicazione, ma il motivo è il grande numero di cubi generati tutti modularmente (modulo 1), nonostante non vengano generati cubi in eccesso rispetto a quelli che andranno visti tramite la telecamera e il cielo sia stato creato in un materiale base con dei plane e non cubi.
 
 come si può vedere il movimento delle nuvole e l'interfaccia grafica che indica con una croce il centro della visuale e, in basso a sinistra, vi sono le istruzioni per il movimento del personaggio
-![Image of Project](/img/Cielo01.PNG)
-![cloud movement](/img/Cielo02.PNG)
+![Image of Project](/img/world.PNG)
+![cloud movement](/img/world2.PNG)
+![scene](/img/world3)
 
 ed ecco una scena completa:
 ![Image Project](/img/world.PNG)
 
+albero e tronco:
+![Image Project](/img/albero.PNG)
+![Image Project](/img/tronco.PNG)
+
+la scena inizia dall'alto con la caduta del personaggio:
+![Image Project](/img/caduta.PNG)
+
 ###Process
 
-Siamo partiti con il comprendere il codice presente nel repository, successivamente ci siamo divisi il lavoro per creare il movimento del personaggio (quindi della camera) utilizzando gli input da tastiera e mouse, e la creazione di una piccola scena con albero e casetta.
-Successivamente abbiamo lavorato assieme sull'implementazione di una heightMap per la generazione del mondo e, non con poche difficoltà, siamo riusciti a non gnerare tutti i cubi (necessari per non mostrare le discontinuità del terreno) mantenendo quelli esterni così da preservare la continuità.
+Siamo partiti con il comprendere il codice presente nel repository, successivamente ci siamo divisi il lavoro per creare il movimento del personaggio (quindi della camera) utilizzando gli input da tastiera e mouse, e la creazione di una piccola scena con un albero e una casetta.
+Successivamente abbiamo lavorato assieme sull'implementazione di una heightMap per la generazione del mondo e, non con poche difficoltà, siamo riusciti a non gnerare tutti i cubi necessari per non mostrare le discontinuità del terreno, mantenendo quelli esterni così da preservare la continuità visiva.
 Abbiamo poi deciso di abbellire il lavoro con alcune animazioni come l'entrata della camera che cade dall'alto con un'accelerazione e il cielo con le nuvole in movimento.
+Abbiamo poi generato un numero di alberi definito in posizioni casuali, e abbiamo creato i cubi dell'acqua nei livelli più bassi della scena.
 Come strumenti oltre ai sopracitati three e stats sono state usate molte funzioni di javascript come la gestione degli eventi tramite funzioni quali addEventListener che ci hanno permesso di ascoltare mouse e tastiera e creare il controller per il personaggio. 
 

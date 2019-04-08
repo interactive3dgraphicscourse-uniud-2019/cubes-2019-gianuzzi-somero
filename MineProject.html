@@ -20,6 +20,8 @@
     <script src="lib/stats.min.js"></script>
     <script src="lib/Coordinates.js"></script>
     <script src="lib/OrbitControls.js"></script>
+
+    <script src="scripts/creation.js"></script>
 </head>
 
 <body>
@@ -221,7 +223,7 @@
             var loader = new THREE.TextureLoader();
             loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
             var texture = loader.load('textures/11635.jpg');
-            var material_sabbia = new THREE.MeshPhongMaterial({map: loader.load('textures/11635.jpg')});
+            var material_sabbia = new THREE.MeshPhongMaterial({ map: loader.load('textures/11635.jpg') });
             var materials = [
                 new THREE.MeshPhongMaterial({
                     map: loader.load('textures/11635.jpg')
@@ -245,7 +247,7 @@
             var cube = new THREE.Mesh(geometry, materials);
             cube.castShadow = true;
             cube.receiveShadow = true;
-            var material = new THREE.MeshBasicMaterial({ color: 0xa1dfff, transparent: true, opacity: 0.2 });
+            var material = new THREE.MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.2 });
             var water = new THREE.Mesh(geometry, material);
             var water_pivot = new THREE.Object3D();
             var sabbia = new THREE.Mesh(geometry, material_sabbia);
@@ -271,7 +273,7 @@
 
                         water_pivot.position.y = boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]));
                         for (y = 0; y < 3 - (boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]))); y++) {
-                            console.log("YOLO");
+                            // console.log("YOLO");
                             water_pivot.position.z = boxDim * i;
                             water_pivot.position.x = boxDim * j;
                             water_pivot.position.y += boxDim;
@@ -354,322 +356,6 @@
 
             return group_scene;
         }
-
-        //funzione per la creazione di un albero
-        function albero(x, y, z) {
-            var geo = new THREE.BoxGeometry(1, 1, 1);
-            var loaderAl = new THREE.TextureLoader();
-            var albero_pos = new THREE.Object3D();
-            var textureLegno = new THREE.MeshPhongMaterial({ map: loaderAl.load('textures/wood.jpg') });
-            var albero = new THREE.Group();
-            var legno = new THREE.Mesh(geo, textureLegno);
-            var textureFoglie = new THREE.MeshPhongMaterial({ map: loaderAl.load('textures/leaves.jpg') });
-            var foglie = new THREE.Mesh(geo, textureFoglie);
-
-            //OMBRE
-            legno.castShadow = true;
-            legno.receiveShadow = true;
-
-            foglie.castShadow = true;
-            foglie.receiveShadow = true;
-
-            //TRONCO
-            albero.add(legno.clone());
-            legno.position.y += 1;
-            albero.add(legno.clone());
-            legno.position.y += 1;
-            albero.add(legno.clone());
-            legno.position.y += 1;
-
-            //FOGLIE
-            foglie.position.y += 3;
-            albero.add(foglie.clone());
-            foglie.position.z += 1;
-            albero.add(foglie.clone());
-            foglie.position.x += 1;
-            albero.add(foglie.clone());
-            foglie.position.z -= 1;
-            albero.add(foglie.clone());
-            foglie.position.z -= 1;
-            albero.add(foglie.clone());
-            foglie.position.x -= 1;
-            albero.add(foglie.clone());
-            foglie.position.x -= 1;
-            albero.add(foglie.clone());
-            foglie.position.z += 1;
-            albero.add(foglie.clone());
-            foglie.position.z += 1;
-            albero.add(foglie.clone());
-            foglie.position.x += 1;
-            foglie.position.y += 1;
-            albero.add(foglie.clone());
-            foglie.position.x += 1;
-            foglie.position.z -= 1;
-            albero.add(foglie.clone());
-            foglie.position.x -= 1;
-            foglie.position.z -= 1;
-            albero.add(foglie.clone());
-            foglie.position.x -= 1;
-            foglie.position.z += 1;
-            albero.add(foglie.clone());
-            foglie.position.x += 1;
-            foglie.position.y += 1;
-            albero.add(foglie.clone());
-
-            // albero.position.x = x;
-            // albero.position.y = y;
-            // albero.position.z = z;
-
-            albero_pos.add(albero);
-
-            albero_pos.position.x = x;
-            albero_pos.position.y = y;
-            albero_pos.position.z = z;
-
-            return albero_pos;
-
-        }
-
-        //funzione per la creazione di un cubo con texture tronco
-        function tronco(x, y, z) {
-            var geometry = new THREE.BoxGeometry(1, 1, 1);
-            var loader = new THREE.TextureLoader();
-            var materials = [
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/cutted_wood.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
-                }),
-                new THREE.MeshPhongMaterial({
-                    map: THREE.ImageUtils.loadTexture('textures/wood.jpg')
-                })
-            ];
-
-            var tronco = new THREE.Mesh(geometry, materials);
-            var tronco_pos = new THREE.Object3D();
-            tronco.castShadow = true;
-            tronco.receiveShadow = true;
-
-            tronco.position.x += x;
-            tronco.position.y += y;
-            tronco.position.z += z;
-            tronco_pos.add(tronco);
-
-            return tronco_pos;
-
-        }
-
-        //funzione per la crezione di una casa
-        function House(x, y, z) {
-            var geometry = new THREE.BoxGeometry(1, 1, 1);
-            var loader = new THREE.TextureLoader();
-            var materials_wall = new THREE.MeshPhongMaterial({
-                map: loader.load('textures/wall.jpg')
-            });
-
-            var materials_roof = new THREE.MeshPhongMaterial({
-                map: loader.load('textures/moss.jpg')
-            });
-
-            var muro = new THREE.Mesh(geometry, materials_roof);
-            var roof = new THREE.Mesh(geometry, materials_wall);
-            var casa = new THREE.Object3D();
-            var casa_pos = new THREE.Object3D();
-
-            muro.castShadow = true;
-            muro.receiveShadow = true;
-
-            roof.castShadow = true;
-            roof.receiveShadow = true;
-
-            //perimetro altezza1
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.x -= 1;
-            casa.add(muro.clone());
-            muro.position.x -= 1;
-            casa.add(muro.clone());
-            muro.position.x -= 2;
-            muro.position.y += 1;
-
-
-            //perimetro altezza2
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.z += 2;
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.x += 2;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.z -= 2;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.x -= 2;
-            casa.add(muro.clone());
-            muro.position.x -= 2;
-            muro.position.y += 1;
-
-            //perimetro altezza3
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.z += 1;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.z -= 1;
-            casa.add(muro.clone());
-            muro.position.x -= 1;
-            casa.add(muro.clone());
-            muro.position.x -= 1;
-            casa.add(muro.clone());
-            muro.position.x -= 1;
-            casa.add(muro.clone());
-
-            muro.position.y += 1;
-            casa.add(muro.clone());
-            muro.position.z += 4;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.z -= 4;
-            casa.add(muro.clone());
-            muro.position.x += 1;
-            casa.add(muro.clone());
-            muro.position.z += 4;
-            casa.add(muro.clone());
-            muro.position.x -= 1;
-            muro.position.y += 1;
-            casa.add(muro.clone());
-            muro.position.z -= 4;
-            casa.add(muro.clone());
-
-
-            //codice per il tetto, molto brutto esteticamente ma se fatto a punta vengono TROPPI cubi
-
-            roof.position.y += 2;
-            roof.position.x -= 1;
-            roof.position.z -= 1;
-
-            for (var i = 0; i < 3; i++) {
-                for (var j = 0; j < 7; j++) {
-                    casa.add(roof.clone());
-                    roof.position.y += 1;
-                    casa.add(roof.clone());
-                    roof.position.y -= 1;
-
-                    roof.position.x += 6 - 2 * i;
-                    casa.add(roof.clone());
-                    roof.position.y += 1;
-                    casa.add(roof.clone());
-
-
-                    roof.position.x -= 6 - 2 * i;
-                    roof.position.y -= 1;
-                    roof.position.z += 1;
-                }
-                roof.position.x += 1;
-                roof.position.z -= 7;
-                roof.position.y += 1;
-            }
-            for (var j = 0; j < 7; j++) {
-                casa.add(roof.clone());
-                roof.position.y += 1;
-                casa.add(roof.clone());
-
-                roof.position.y -= 1;
-                roof.position.z += 1;
-            }
-
-
-            casa.position.x += x;
-            casa.position.y += y;
-            casa.position.z += z;
-            //casa.rotation.y += Math.PI;
-            casa_pos.add(casa);
-
-            return casa_pos;
-
-        }
-
-        //funzione per la creazione di nuvole random
-        function nuvola(x, y, z) {
-            var geometry = new THREE.BoxGeometry(1, 1, 1);
-            var materialCloud = new THREE.MeshPhongMaterial({ color: 0xffffff });
-            var cloudBox = new THREE.Mesh(geometry, materialCloud);
-            var cloud = new THREE.Object3D();
-            var numBoxCloud = Math.round(Math.random() * (20 - 8) + 8);
-            // console.log(numBoxCloud);
-            for (nBox = 0; nBox < numBoxCloud; nBox++) {
-                cloud.add(cloudBox.clone());
-                cloudBox.position.x = Math.floor(Math.random() * (2 - (-2)) + (-2));
-                cloudBox.position.z = Math.floor(Math.random() * (2 - (-2)) + (-2));
-            }
-            cloud.position.set(x, y, z);
-            return cloud;
-        }
-
-
-
-
 
 
         function controlCollisionWall() {
@@ -846,18 +532,20 @@
             for (var i = 0; i < numeroAlberi; i++) {
                 var alberoX = Math.floor(Math.random() * (Math.floor(groundNumBoxX / 2) - Math.floor((-groundNumBoxX / 2))) + Math.floor((-groundNumBoxX / 2)));
                 var alberoZ = Math.floor(Math.random() * (Math.floor(groundNumBoxZ / 2) - Math.floor((-groundNumBoxZ / 2))) + Math.floor((-groundNumBoxZ / 2)));
-                //faccio un controllo per vedere che non sia dentro la casa, nel caso li ricalcolo (potrebbe essere ancora non funzionante, ma faccio solo un controlo):
-                if (alberoX < houseX + 3 && alberoX > houseX - 3 && alberoY > houseZ - 5 && alberoY < houseZ + 5) {
-                    alberoX = Math.floor(Math.random() * (Math.floor(groundNumBoxX / 2) - Math.floor((-groundNumBoxX / 2))) + Math.floor((-groundNumBoxX / 2)));
-                    alberoZ = Math.floor(Math.random() * (Math.floor(groundNumBoxZ / 2) - Math.floor((-groundNumBoxZ / 2))) + Math.floor((-groundNumBoxZ / 2)));
+                //faccio un controllo per vedere che non sia dentro la casa, nel caso li ricalcolo (potrebbe essere ancora non funzionante, ma faccio sei controli):
+                for (var controllo = 0; controllo < 6; controllo++) {
+                    if (alberoX < houseX + 3 && alberoX > houseX - 3 && alberoY > houseZ - 5 && alberoY < houseZ + 5) {
+                        alberoX = Math.floor(Math.random() * (Math.floor(groundNumBoxX / 2) - Math.floor((-groundNumBoxX / 2))) + Math.floor((-groundNumBoxX / 2)));
+                        alberoZ = Math.floor(Math.random() * (Math.floor(groundNumBoxZ / 2) - Math.floor((-groundNumBoxZ / 2))) + Math.floor((-groundNumBoxZ / 2)));
+                    }
                 }
                 var trasp_alberox = Math.floor(groundNumBoxX / 2 + alberoX);
                 var trasp_alberoz = Math.floor(groundNumBoxZ / 2 + alberoZ);
                 var alberoY = boxDim * Math.floor(data[trasp_alberox + (groundNumBoxX * trasp_alberoz)]) + boxDim;
-                // console.log(alberoX + " " + alberoY + " " + alberoZ);
-                // console.log(Math.round(data[alberoX + (groundNumBoxX * alberoZ)]));
+                if (alberoY>2){
                 albero1.position.set(alberoX, alberoY, alberoZ);
                 scene.add(albero1.clone());
+                }
             }
 
 
