@@ -221,6 +221,7 @@
             var loader = new THREE.TextureLoader();
             loader.setCrossOrigin(""); //dava dei warning per la CrossOrigin, così si ammutolisce
             var texture = loader.load('textures/11635.jpg');
+            var material_sabbia = new THREE.MeshPhongMaterial({map: loader.load('textures/11635.jpg')});
             var materials = [
                 new THREE.MeshPhongMaterial({
                     map: loader.load('textures/11635.jpg')
@@ -244,13 +245,19 @@
             var cube = new THREE.Mesh(geometry, materials);
             cube.castShadow = true;
             cube.receiveShadow = true;
-
+            var material = new THREE.MeshBasicMaterial({ color: 0xa1dfff, transparent: true, opacity: 0.2 });
+            var water = new THREE.Mesh(geometry, material);
+            var water_pivot = new THREE.Object3D();
+            var sabbia = new THREE.Mesh(geometry, material_sabbia);
+            var sabbia_pivot = new THREE.Object3D();
             //Inizializzo un pivot (un empty object) nel quale aggiungerò il cubo, dopo di che 
             //clonerò il pivot n volte spostandolo leggermente ogni volta così da costruire la scena.
             var pivot = new THREE.Object3D();
             var group = new THREE.Group();
 
             pivot.add(cube);
+            water_pivot.add(water);
+            sabbia_pivot.add(sabbia);
 
 
             for (i = 0; i < groundNumBoxX; i++) {
@@ -260,6 +267,17 @@
                     pivot.position.y = boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]));
                     group.add(pivot.clone());
 
+                    if ((boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]))) < 3) {
+
+                        water_pivot.position.y = boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]));
+                        for (y = 0; y < 3 - (boxDim * (Math.floor(data[(i * groundNumBoxZ) + j]))); y++) {
+                            console.log("YOLO");
+                            water_pivot.position.z = boxDim * i;
+                            water_pivot.position.x = boxDim * j;
+                            water_pivot.position.y += boxDim;
+                            group.add(water_pivot.clone());
+                        }
+                    }
                     // console.log(data[(i * groundNumBoxZ) + j]);
                     //Codice per stampare quadrati di rempimento
 
@@ -809,9 +827,9 @@
             //creo una casa tramite apposita funzione
             var houseX = -2;
             var houseZ = -1;
-            var houseY = boxDim * Math.floor(data[Math.floor(houseX+groundNumBoxX/2) + (groundNumBoxX * Math.floor(houseZ+groundNumBoxZ/2))]) + boxDim;
+            var houseY = boxDim * Math.floor(data[Math.floor(houseX + groundNumBoxX / 2) + (groundNumBoxX * Math.floor(houseZ + groundNumBoxZ / 2))]) + boxDim;
 
-            var casa = House(houseX,houseY,houseZ);
+            var casa = House(houseX, houseY, houseZ);
             scene.add(casa);
 
             //creo un albero tramite l'apposita funzione controllando che non si compenetri con il pavimento
