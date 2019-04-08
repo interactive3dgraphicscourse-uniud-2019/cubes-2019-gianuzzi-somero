@@ -47,6 +47,9 @@
         var numNuvole = 6;
         var speedNuvole = 8;      //in m/s
 
+        //alberi
+        var numeroAlberi = 52;
+
         //VARIABILI PER LA GESTIONE DELLA CAM
         //posizione del mouse in game
         var positionMouse;
@@ -394,11 +397,16 @@
             foglie.position.x += 1;
             foglie.position.y += 1;
             albero.add(foglie.clone());
-            albero.position.x += x;
-            albero.position.y += y;
-            albero.position.z += z;
+
+            // albero.position.x = x;
+            // albero.position.y = y;
+            // albero.position.z = z;
 
             albero_pos.add(albero);
+
+            albero_pos.position.x = x;
+            albero_pos.position.y = y;
+            albero_pos.position.z = z;
 
             return albero_pos;
 
@@ -700,7 +708,7 @@
             loadedHeighMap = false;
             var imgLoader = new THREE.ImageLoader();
             var img = imgLoader.load(// resource URL
-                "textures/heightmap1.png",
+                "textures/heightmap3.png",
 
                 // onLoad callback
                 function (image) {
@@ -734,7 +742,6 @@
                 // onLoad callback
                 function (image) {
                     // use the image, e.g. draw part of it on a canvas
-                    // console.log("loaded");
                     loadedImg1 = true;
                     image.style.position = "absolute";
                     image.style.top = "50%";
@@ -742,10 +749,6 @@
                     image.style.opacity = "0.9";
 
                     Gui.push(image);
-                    // document.body.appendChild(image);
-                    // var canvas = document.getElementsByTagName('canvas');
-                    // var context = canvas.getContext('2d');
-                    // context.drawImage(image, 100, 100);
                 },
 
                 // onProgress callback currently not supported
@@ -773,10 +776,6 @@
                     image.style.opacity = "0.9";
 
                     Gui.push(image);
-                    // document.body.appendChild(image);
-                    // var canvas = document.getElementsByTagName('canvas');
-                    // var context = canvas.getContext('2d');
-                    // context.drawImage(image, 100, 100);
                 },
 
                 // onProgress callback currently not supported
@@ -807,19 +806,43 @@
             //utilizzo una funzione per la creazione e la gestione della camera che sarà anche il punto di vista del Giocatore che può muovere con mouse e tastiera il PG
             createCamera();
 
+            //creo una casa tramite apposita funzione
+            var houseX = -2;
+            var houseZ = -1;
+            var houseY = boxDim * Math.floor(data[Math.floor(houseX+groundNumBoxX/2) + (groundNumBoxX * Math.floor(houseZ+groundNumBoxZ/2))]) + boxDim;
+
+            var casa = House(houseX,houseY,houseZ);
+            scene.add(casa);
+
             //creo un albero tramite l'apposita funzione controllando che non si compenetri con il pavimento
-            var alberox = -4;
+            var alberox = -8;
             var alberoz = 0;
 
-            var trasp_alberox = alberox + groundNumBoxX / 2;
-            var trasp_alberoz = groundNumBoxX / 2 - alberoz;
-            var alberoY = boxDim * Math.floor(data[trasp_alberox + (groundNumBoxX * trasp_alberoz)]);
-            var albero1 = albero(alberox, 1, alberoz);
+            var trasp_alberox = Math.floor(alberox + groundNumBoxX / 2);
+            var trasp_alberoz = Math.floor(groundNumBoxZ / 2 - alberoz);
+            var alberoY = boxDim * Math.floor(data[trasp_alberox + (groundNumBoxX * trasp_alberoz)]) + boxDim;
+            var albero1 = albero(alberox, alberoY, alberoz);
+            console.log(albero1.position);
             scene.add(albero1);
 
-            //creo una casa tramite apposita funzione
-            var casa = House(2, 1, -8);
-            scene.add(casa);
+            for (var i = 0; i < numeroAlberi; i++) {
+                var alberoX = Math.floor(Math.random() * (Math.floor(groundNumBoxX / 2) - Math.floor((-groundNumBoxX / 2))) + Math.floor((-groundNumBoxX / 2)));
+                var alberoZ = Math.floor(Math.random() * (Math.floor(groundNumBoxZ / 2) - Math.floor((-groundNumBoxZ / 2))) + Math.floor((-groundNumBoxZ / 2)));
+                //faccio un controllo per vedere che non sia dentro la casa, nel caso li ricalcolo (potrebbe essere ancora non funzionante, ma faccio solo un controlo):
+                if (alberoX < houseX + 3 && alberoX > houseX - 3 && alberoY > houseZ - 5 && alberoY < houseZ + 5) {
+                    alberoX = Math.floor(Math.random() * (Math.floor(groundNumBoxX / 2) - Math.floor((-groundNumBoxX / 2))) + Math.floor((-groundNumBoxX / 2)));
+                    alberoZ = Math.floor(Math.random() * (Math.floor(groundNumBoxZ / 2) - Math.floor((-groundNumBoxZ / 2))) + Math.floor((-groundNumBoxZ / 2)));
+                }
+                var trasp_alberox = Math.floor(groundNumBoxX / 2 + alberoX);
+                var trasp_alberoz = Math.floor(groundNumBoxZ / 2 + alberoZ);
+                var alberoY = boxDim * Math.floor(data[trasp_alberox + (groundNumBoxX * trasp_alberoz)]) + boxDim;
+                // console.log(alberoX + " " + alberoY + " " + alberoZ);
+                // console.log(Math.round(data[alberoX + (groundNumBoxX * alberoZ)]));
+                albero1.position.set(alberoX, alberoY, alberoZ);
+                scene.add(albero1.clone());
+            }
+
+
 
             //questa funzione crea ed aggiunge alla scena il mondo terreno, i bordi
             scene.add(creationLimitsWorld(groundNumBoxX, groundNumBoxZ, boxDim));
